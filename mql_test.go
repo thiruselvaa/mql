@@ -22,6 +22,13 @@ var (
 	"individualIdentifier": {
 		"string": "cdb:4:144667964:CO:RAM0507494677209000"
 	},
+	"memberships": {
+		"array": [
+		  {
+			"active": true
+		  }
+		]
+	},
 	"medicareEntitlement": {
 		"array": [
 			{
@@ -225,7 +232,8 @@ func Test_mql(t *testing.T) {
 				// expression: `filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0)`, //better option
 				// expression: `map(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0)`, //better option
 				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int))`,
-				expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int)) == [1,2]`, //returns true
+				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int)) == [1,2]`, //returns true
+
 				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int)) in [1,2]`, //returns false
 				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), float(.securityPermissionValue.int)) == [1,2]`, //returns false
 				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), .securityPermissionValue.int) == [1,2]`, //returns false
@@ -240,6 +248,11 @@ func Test_mql(t *testing.T) {
 				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string < "2021-02-01")`,
 				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string != "2021-02-01")`,
 				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string != "2021-01-01")`, //returns false
+
+				// expression: `message.memberships?.array ?? "not-found"`,
+				// expression: `any(message.memberships.array, .active == true)`,
+				// expression: `all(message.memberships.array, .active == true)`,
+				expression: `one(message.memberships.array, .active == true)`,
 
 				//not-working
 				// expression: `message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"][]["securityPermissionValue"]["string"] ?? "nodata"`,
