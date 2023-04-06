@@ -81,19 +81,19 @@ var (
 			"securityPermissionAny": null,
 			"securitySourceSystemCode": {
 				"string": "cdb"
-			},
-			"securityAlt1SourceSystemCode": {
-				"string": "CDB"
-			},
-			"securityAlt2SourceSystemCode": {
-				"string": "cdb  "
-			},
-			"securityAlt3SourceSystemCode": {
-				"string": "  cdb"
-			},
-			"securityAlt4SourceSystemCode": {
-				"string": "  cdb  "
 			}
+		},
+		"securityAlt1SourceSystemCode": {
+			"string": "CDB"
+		},
+		"securityAlt2SourceSystemCode": {
+			"string": "cdb  "
+		},
+		"securityAlt3SourceSystemCode": {
+			"string": "  cdb"
+		},
+		"securityAlt4SourceSystemCode": {
+			"string": "  cdb  "
 		}
 	}
 }`
@@ -240,6 +240,7 @@ func Test_mql(t *testing.T) {
 				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), .securityPermissionValue.int) in [1,2]`, //returns false
 
 				// expression: `message.medicareEntitlement?.array ?? "not-found"`,
+				// expression: `all(message.medicareEntitlement.array, .effectiveDate.string > '2020-01-01')`,
 				// expression: `all(message.medicareEntitlement.array, .effectiveDate.string > "2020-01-01")`,
 				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string > "2020-01-01")`,
 				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string >= "2021-01-01")`,
@@ -252,9 +253,42 @@ func Test_mql(t *testing.T) {
 				// expression: `message.memberships?.array ?? "not-found"`,
 				// expression: `any(message.memberships.array, .active == true)`,
 				// expression: `all(message.memberships.array, .active == true)`,
-				expression: `one(message.memberships.array, .active == true)`,
+				// expression: `one(message.memberships.array, .active == true)`,
 
-				//not-working
+				// expression: `message.security.securityAlt1SourceSystemCode.string == 'cdb'`, //returns false
+				// expression: `message.security.securityAlt1SourceSystemCode.string == 'CDB'`,
+				// expression: `message.security.securityAlt1SourceSystemCode.string matches '(?i)cdb'`,
+				// expression: `message.security.securityAlt1SourceSystemCode.string matches '(?i)cDB'`,
+
+				// expression: `message.security.securityAlt2SourceSystemCode.string matches '(?i)cdb'`,
+				// expression: `message.security.securityAlt3SourceSystemCode.string matches '(?i)cdb'`,
+				// expression: `message.security.securityAlt4SourceSystemCode.string matches '(?i)cdb'`,
+
+				// expression: `message.security.securityAlt4SourceSystemCode.string contains 'db'`,
+				// expression: `!(message.security.securityAlt4SourceSystemCode.string contains 'cb')`,
+				// expression: `!(message.security.securityAlt4SourceSystemCode.string contains 'db')`, //returns false
+				// expression: `not(message.security.securityAlt4SourceSystemCode.string contains 'db')`, //returns false
+				// expression: `!message.security.securityAlt4SourceSystemCode.string contains 'db'`, //won't work - unless parenthis are used
+				// expression: `message.security.securityAlt4SourceSystemCode.string !contains 'db'`, //won't work
+
+				// expression: `message.security.securityAlt1SourceSystemCode.string startsWith 'CD'`,
+				// expression: `message.security.securityAlt1SourceSystemCode.string endsWith 'DB'`,
+				// expression: `message.security.securityAlt2SourceSystemCode.string matches '^[ \t]+cd{1}'`, //returns false
+				// expression: `message.security.securityAlt2SourceSystemCode.string matches 'cd{1}'`,
+				// expression: `message.security.securityAlt2SourceSystemCode.string matches '^cd{1}'`,
+				// expression: `message.security.securityAlt2SourceSystemCode.string matches '^cd{1}'`,
+				// expression: `message.security.securityAlt3SourceSystemCode.string matches '^[ \t]+cd{1}'`,
+				// expression: `message.security.securityAlt4SourceSystemCode.string matches '^[ \t]+cd{1}'`,
+
+				// expression: `message.security.securityAlt1SourceSystemCode.string matches '(?i)db{1}$'`,
+				// expression: `message.security.securityAlt2SourceSystemCode.string matches 'db{1}[ \t]+$'`,
+				// expression: `message.security.securityAlt3SourceSystemCode.string matches 'db{1}$'`,
+				// expression: `message.security.securityAlt4SourceSystemCode.string matches 'db{1}'`,
+				expression: `message.security.securityAlt4SourceSystemCode.string matches 'db{1}[ \t]+$'`,
+
+				// expression: `message.security.securityAlt3SourceSystemCode.string startsWith 'cd'`, //won't work since it has space padding at beginning of the word
+				// expression: `map(filter(message.security.securityAlt3SourceSystemCode.string != nil), message.security.securityAlt3SourceSystemCode.string`, //never works, totally incorrect syntax
+
 				// expression: `message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"][]["securityPermissionValue"]["string"] ?? "nodata"`,
 				// expression: `message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"]#["securityPermissionValue"]["string"] ?? "nodata"`,
 				// expression: `message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"].#.["securityPermissionValue"]["string"] ?? "nodata"`,
