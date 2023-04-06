@@ -224,8 +224,15 @@ func Test_mql(t *testing.T) {
 
 				// expression: `filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0)`, //better option
 				// expression: `map(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0)`, //better option
+				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int))`,
+				expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int)) == [1,2]`, //returns true
+				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int)) in [1,2]`, //returns false
+				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), float(.securityPermissionValue.int)) == [1,2]`, //returns false
+				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), .securityPermissionValue.int) == [1,2]`, //returns false
+				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), .securityPermissionValue.int) in [1,2]`, //returns false
 
 				// expression: `message.medicareEntitlement?.array ?? "not-found"`,
+				// expression: `all(message.medicareEntitlement.array, .effectiveDate.string > "2020-01-01")`,
 				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string > "2020-01-01")`,
 				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string >= "2021-01-01")`,
 				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string <= "2021-01-01")`,
