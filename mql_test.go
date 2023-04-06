@@ -25,7 +25,105 @@ var (
 	"memberships": {
 		"array": [
 		  {
-			"active": true
+			"active": true,
+			"hContractId": 
+			{
+				"string": "H2226"
+			},
+			"packageBenefitPlanCode": {
+				"string": "001"
+			},
+			"segmentId": {
+				"string": "null"
+			},
+			"membershipGroupData": {
+				"array": [
+				  {
+					"groupNumber": {
+						"string": ""
+					}
+				  },
+				  {
+					"groupNumber": {
+						"string": "100"
+					}
+				  }
+				]
+			},
+			"effectiveDate": {
+				"string": "2022-12-31"
+			}
+		  },
+		  {
+			"active": true,
+			"hContractId": 
+			{
+				"string": "H2226"
+			},
+			"packageBenefitPlanCode": {
+				"string": "002"
+			},
+			"segmentId": {
+				"string": "null"
+			},
+			"membershipGroupData": {
+				"array": [
+					{
+						"groupNumber": {
+							"string": "12345"
+						}
+					}
+				]
+			},
+			"effectiveDate": {
+				"string": "2022-12-31"
+			}
+		  },
+		  {
+			"active": true,
+			"hContractId": 
+			{
+				"string": "H2226"
+			},
+			"packageBenefitPlanCode": {
+				"string": "003"
+			},
+			"segmentId": {
+				"string": "null"
+			},
+			"membershipGroupData": {
+				"array": [
+				  
+				]
+			},
+			"effectiveDate": {
+				"string": "2022-12-31"
+			}
+		  },
+		  {
+			"active": true,
+			"hContractId": 
+			{
+				"string": "H2226"
+			},
+			"packageBenefitPlanCode": {
+				"string": "004"
+			},
+			"segmentId": {
+				"string": "null"
+			},
+			"membershipGroupData": {
+				"array": [
+				  {
+					"groupNumber": {
+						"string": "null"
+					}
+				  }
+				]
+			},
+			"effectiveDate": {
+				"string": "2022-12-31"
+			}
 		  }
 		]
 	},
@@ -284,7 +382,7 @@ func Test_mql(t *testing.T) {
 				// expression: `message.security.securityAlt2SourceSystemCode.string matches 'db{1}[ \t]+$'`,
 				// expression: `message.security.securityAlt3SourceSystemCode.string matches 'db{1}$'`,
 				// expression: `message.security.securityAlt4SourceSystemCode.string matches 'db{1}'`,
-				expression: `message.security.securityAlt4SourceSystemCode.string matches 'db{1}[ \t]+$'`,
+				// expression: `message.security.securityAlt4SourceSystemCode.string matches 'db{1}[ \t]+$'`,
 
 				// expression: `message.security.securityAlt3SourceSystemCode.string startsWith 'cd'`, //won't work since it has space padding at beginning of the word
 				// expression: `map(filter(message.security.securityAlt3SourceSystemCode.string != nil), message.security.securityAlt3SourceSystemCode.string`, //never works, totally incorrect syntax
@@ -301,6 +399,214 @@ func Test_mql(t *testing.T) {
 				// expression: `message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"][1]["securityPermissionValue"]["string"] in [0, 1, 2]`,
 				// expression: `all(float(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"]), {#["securityPermissionValue"]["string"] in ["0", "1", "2"]})`,
 				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in [float(0), float(1), float(2)]})`,
+
+				//solutran
+				// expression: `message.memberships.array ?? null`,
+				// expression: `message.memberships.array[1].hContractId.string ?? null`,
+				// expression: `map(filter(message.memberships.array, .hContractId.string == "H2226"), .hContractId.string)`,
+				// expression: `map(filter(message.memberships.array, len(.hContractId.string) > 0), .hContractId.string)`,
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.hContractId.string) > 0),
+				// 		.hContractId.string + "," +
+				// 		.packageBenefitPlanCode.string + "," +
+				// 		.segmentId.string + "," +
+				// 		.effectiveDate.string
+				// 	)
+				// `,
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array,
+				// 			len(message.memberships.array) > 0
+				// 			and .hContractId.string in ["H2226"]
+				// 			and .packageBenefitPlanCode.string in ["001","002","003","004"]
+				// 			and .segmentId.string == "null"
+				// 			and .effectiveDate.string > '2021-12-31'
+				// 		),
+				// 		.hContractId.string + "," +
+				// 		.packageBenefitPlanCode.string + "," +
+				// 		.segmentId.string + "," +
+				// 		.effectiveDate.string
+				// 	)
+				// `,
+
+				expression: `
+					any(message.memberships.array, 
+						len(message.memberships.array) > 0
+						and .hContractId.string in ["H2226"] 
+						and .packageBenefitPlanCode.string in ["001","002","003","004"]
+						and .segmentId.string == "null"
+						and .effectiveDate.string > '2021-12-31'
+					)
+				`,
+
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.hContractId.string) > 0),
+				// 		.hContractId.string + "," +
+				// 		.packageBenefitPlanCode.string + "," +
+				// 		.segmentId.string + "," +
+				// 		map(
+				// 			filter(.membershipGroupData.array, len(.membershipGroupData.array) > 0),
+				// 			.groupNumber.string
+				// 		) + "," +
+				// 		.effectiveDate.string
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+				// 		map(
+				// 			filter(.membershipGroupData.array, len(.groupNumber.string) >=0),
+				// 			.groupNumber.string
+				// 		)
+				// 	)
+				// `,
+
+				// expression: `
+				// // map(
+				// 	// len(
+				// 		map(
+				// 			filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+				// 			map(
+				// 				filter(.membershipGroupData.array, len(.groupNumber.string) >=0 ),
+				// 				.groupNumber.string
+				// 			)
+				// 		)
+				// 		// ) in ["null", "100", "12345"]
+				// 	// )
+				// 		// )[1][0]
+				// 		// ),
+				// 		// ?? null
+				// // )
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+				// 		[0][1].groupNumber.string
+				// 	)
+				// `,
+
+				// expression: `
+				// 	any(
+				// 		map(
+				// 			filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+				// 			.membershipGroupData.array
+				// 		),
+				// 		{ [0].groupNumber.string matches '/12345/'}
+				// 	)
+				// `,
+
+				// expression: `message.memberships.array[1].membershipGroupData.array[0].groupNumber.string ?? null`,
+				// expression: `message.memberships.array[1].membershipGroupData.array[0].groupNumber.string ?? null`,
+				// expression: `message.memberships.array[2].membershipGroupData.array[0].groupNumber.string ?? null`, //throws error array out of index
+				// expression: `len(message.memberships.array[2].membershipGroupData.array) == 0`,
+				// expression: `
+				// 	len(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) >= 0)
+				// 	)
+				// `,
+				// expression: `
+				// 	count(message.memberships.array, len(.membershipGroupData.array) > 0)
+				// `,
+				// expression: `
+				// 	count(message.memberships.array, len(.membershipGroupData.array) >= 0)
+				// `,
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) > 0),
+				// 		len(.membershipGroupData.array)
+				// 	)
+				// `,
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+				// 		len(.membershipGroupData.array)
+				// 	)
+				// `,
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) > 0),
+				// 		.membershipGroupData.array
+				// 	)
+				// `,
+
+				// expression: `
+				// // map(
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+				// 		.membershipGroupData.array
+				// 	)
+				// 	// .groupNumber?.string
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) == 0),
+				// 		.groupNumber?.string
+				// 	)
+				// `,
+				// expression: `
+				// 	map(filter(
+				// 			map(filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+				// 				.membershipGroupData.array),
+				// 			len(.groupNumber.string) >= 0),
+				// 		.groupNumber.string
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) == 0 or len(.membershipGroupData.array) > 0), "null"
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+				// 			map(
+				// 				filter(.membershipGroupData.array, len(.membershipGroupData.array) > 0)
+				// 				.groupNumber.string
+				// 			)
+				// 		)
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.hContractId.string) > 0),
+				// 			map(
+				// 				filter(.membershipGroupData.array, len(.membershipGroupData.array) > 0)
+				// 				.groupNumber.string
+				// 			)
+				// 		)
+				// 	)
+				// `,
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) > 0),
+				// 		{
+				// 			map(
+				// 				filter(.membershipGroupData.array, .groupNumber.string != nil),
+				// 				.groupNumber.string
+				// 			)
+				// 		}
+				// 	)
+				// `,
+
+				// expression: `message.memberships.array[0].membershipGroupData.array ?? null`,
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) > 0),
+				// 		len(.membershipGroupData.array)
+				// 	)
+				// `,
+
+				// expression: `len(message.memberships.array)`,
+				// expression: `all(message.memberships.array, .hContractId.string in ["H2226", "R7444"])`,
+				// expression: `all(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int in [2, 5, 0, 3, 1, 7])`, //better option
 
 				//not-working
 				// expression: `message.security."com.optum.exts.eligibility.model.common.Security".securitySourceSystemCode.string ?? "nodata"`,
@@ -322,7 +628,14 @@ func Test_mql(t *testing.T) {
 			// 	t.Errorf("mql() error = %v, wantErr %v", err, tt.wantErr)
 			// 	return
 			// }
-			fmt.Printf("mql() output type(%T)= value(%v), want %v, err = %v\n", gotResult, gotResult, tt.wantResult, err)
+			var value []byte
+			value, err = jsonutil.EncodePretty(gotResult)
+			if err != nil {
+				fmt.Printf("unable to decode the json string: %v\n", err)
+			}
+			dump.V(string(value))
+
+			fmt.Printf("mql() output type(%T)= value(%#v), want %v, err = %v\n", gotResult, gotResult, tt.wantResult, err)
 			if !reflect.DeepEqual(gotResult, tt.wantResult) {
 				t.Errorf("mql() = %v, want %v", gotResult, tt.wantResult)
 			}
