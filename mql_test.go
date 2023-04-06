@@ -22,8 +22,36 @@ var (
 	"individualIdentifier": {
 		"string": "cdb:4:144667964:CO:RAM0507494677209000"
 	},
+	"medicareEntitlement": {
+		"array": [
+			{
+				"effectiveDate": {
+					"string": "2021-01-01"
+				}
+			}
+		]
+	},
 	"security": {
 		"com.optum.exts.eligibility.model.common.Security": {
+			"securityPermissionInt": {
+				"array": [
+					{
+						"securityPermissionValue": {
+							"int": 0
+						}
+					},
+					{
+						"securityPermissionValue": {
+							"int": 1
+						}
+					},
+					{
+						"securityPermissionValue": {
+							"int": 2
+						}
+					}
+				]
+			},
 			"securityPermission": {
 				"array": [
 					{
@@ -174,11 +202,37 @@ func Test_mql(t *testing.T) {
 				// expression: `any(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in ["0", "1", "2"]})`,
 				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], #["securityPermissionValue"]["string"] in ["0", "1", "2"])`,
 
-				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in [0, 1, 2]})`,
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in [0, 1, 2]})`, //won't work
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], .["securityPermissionValue"]["string"] in ["0", "1", "2"])`, //
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], #["securityPermissionValue"]["string"] in ["0", "1", "2"])`,
 				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in ["0", "1", "2"]})`,
-				expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in ["0", "1", "2"]})`,
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in ["0", "1", "2"]})`,
 				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in [0, 1, 2]})`,
 				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"], {#["securityPermissionValue"]["string"] in [float("0"), float("1"), float("2")]})`,
+
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in ["0", "1", "2"]})`, //won't work
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in list[0, 1, 2]})`,   //won't work
+				// expression: `all(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int in [2, 5, 0, 3, 1, 7])`, //better option
+				// expression: `all(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int in 0..3)`, //better option
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], .securityPermissionValue.int in 0..3)`,
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], #["securityPermissionValue"]["int"] in 0..3)`,
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in 0..3})`,
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in 0..10})`,
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in [0, 1, 2]})`,
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in [int("0"), int("1"), int("2")]})`,
+				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in [float("0"), float("1"), float("2")]})`,
+
+				// expression: `filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0)`, //better option
+				// expression: `map(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0)`, //better option
+
+				// expression: `message.medicareEntitlement?.array ?? "not-found"`,
+				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string > "2020-01-01")`,
+				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string >= "2021-01-01")`,
+				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string <= "2021-01-01")`,
+				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string < "2022-01-01")`,
+				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string < "2021-02-01")`,
+				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string != "2021-02-01")`,
+				// expression: `any(message.medicareEntitlement.array, .effectiveDate.string != "2021-01-01")`, //returns false
 
 				//not-working
 				// expression: `message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermission"]["array"][]["securityPermissionValue"]["string"] ?? "nodata"`,
