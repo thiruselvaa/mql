@@ -1,0 +1,30 @@
+{
+    "query": {
+        "name": "test",
+        "where": {
+            "message.value.security.securityAlt1SourceSystemCode.string": {
+                "__operator_eq": "CDB"
+            },
+            "__logical_and": [
+                {
+                    "__function_all_array_elements_pass_predicate": {
+                        "argument": {
+                            "field_path_to_array": "message.value.security[\"com.optum.exts.eligibility.model.common.Security\"].securityPermissionInt.array"
+                        },
+                        "predicate": {
+                            "field_path_to_array_element": ".securityPermissionValue.int",
+                            "__operator_in": [
+                                2,
+                                5,
+                                0,
+                                3,
+                                1,
+                                7
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

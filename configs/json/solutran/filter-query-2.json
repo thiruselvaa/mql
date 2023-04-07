@@ -1,0 +1,101 @@
+{
+  "query": {
+    "name": "solutran",
+    "where": {
+      "function": {
+        "name": "len",
+        "argument": {
+          "field_path": "message.memberships.array"
+        }
+      },
+      "operator": "gt",
+      "value": 0,
+      "and": [
+        {
+          "function": {
+            "name": "any",
+            "argument": {
+              "array_field_path": "message.value.memberships.array"
+            },
+            "predicate": {
+              "array_sub_field_path": ".hContractId.string",
+              "operator": "in",
+              "value": [
+                "H2226",
+                "R7444"
+              ],
+              "and": [
+                {
+                  "array_sub_field_path": ".packageBenefitPlanCode.string",
+                  "operator": "in",
+                  "value": [
+                    "001",
+                    "002",
+                    "003",
+                    "004"
+                  ]
+                },
+                {
+                  "array_sub_field_path": ".segmentId.string",
+                  "operator": "in",
+                  "value": [
+                    "null",
+                    "001",
+                    "002",
+                    "003",
+                    "004"
+                  ]
+                },
+                {
+                  "function": {
+                    "name": "all",
+                    "argument": {
+                      "array_field_path": "message.value.memberships.array"
+                    },
+                    "predicate": {
+                      "array_sub_field_path": ".groupNumber.string",
+                      "operator": "in",
+                      "value": [
+                        "12345",
+                        "100",
+                        "97008",
+                        "97007",
+                        "97006",
+                        "97005",
+                        "97004",
+                        "97003",
+                        "12830",
+                        "null",
+                        "",
+                        "*"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "or": [
+                    {
+                      "array_sub_field_path": ".effectiveDate.string",
+                      "operator": "gt",
+                      "value": "2020-12-31"
+                    },
+                    {
+                      "array_sub_field_path": ".effectiveDate.string",
+                      "operator": "gt",
+                      "value": "2021-12-31"
+                    },
+                    {
+                      "array_sub_field_path": ".effectiveDate.string",
+                      "operator": "gt",
+                      "value": "2022-12-31"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

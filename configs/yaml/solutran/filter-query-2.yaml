@@ -1,0 +1,66 @@
+query:
+  name: solutran
+  where:
+      function: 
+        name: len #Returns the length of an array, a map or a string for the given field_path.
+        argument:
+          field_path: message.memberships.array
+      operator: gt
+      value : 0
+      and:
+        - function:
+            name: any #Returns true if any elements for the given field_path_to_array satisfies the predicate that uses array element's field_path. If the array is empty, returns false.
+            argument:
+              field_path_to_array: message.value.memberships.array
+            predicate:
+              field_path_to_array_element: .hContractId.string
+              operator: in
+              value:
+                - H2226
+                - R7444
+              and:
+                - field_path_to_array_element: .packageBenefitPlanCode.string
+                  operator: in
+                  value:
+                    - "001"
+                    - "002"
+                    - "003"
+                    - "004"
+                - field_path_to_array_element: .segmentId.string
+                  operator: in
+                  value:
+                    - "null"
+                    - "001"
+                    - "002"
+                    - "003"
+                    - "004"
+                - function:
+                    name: any #any_element_match
+                    argument:
+                      field_path_to_array: message.value.memberships.array
+                    predicate:
+                      field_path_to_array_element: .groupNumber.string
+                      operator: in
+                      value:
+                        - "12345"
+                        - "100"
+                        - "97008"
+                        - "97007"
+                        - "97006"
+                        - "97005"
+                        - "97004"
+                        - "97003"
+                        - "12830"
+                        - "null"
+                        - ""
+                        - "*"
+                - or:
+                  - field_path_to_array_element: .effectiveDate.string
+                    operator: gt
+                    value: "2020-12-31"
+                  - field_path_to_array_element: .effectiveDate.string
+                    operator: gt
+                    value: "2021-12-31"
+                  - field_path_to_array_element: .effectiveDate.string
+                    operator: gt
+                    value: "2022-12-31"

@@ -5,7 +5,7 @@
             "and": [
                 {
                     "len": {
-                        "message.memberships.array": {
+                        "message.value.memberships.array": {
                             "gt": 0
                         }
                     }
