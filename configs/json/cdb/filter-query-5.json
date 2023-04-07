@@ -1,0 +1,39 @@
+{
+  "query": {
+    "name": "test",
+    "where": {
+      "not": {
+        "and": [
+          {
+            "or": [
+              {
+                "message.value.security.securityAlt1SourceSystemCode.string": "cdb"
+              },
+              {
+                "message.value.security.securityAlt1SourceSystemCode.string": {
+                  "eq": "CDB"
+                }
+              }
+            ]
+          },
+          {
+            "all": {
+              "message.value.security[\"com.optum.exts.eligibility.model.common.Security\"].securityPermissionInt.array": {
+                ".securityPermissionValue.int": {
+                  "in": [
+                    2,
+                    5,
+                    0,
+                    3,
+                    1,
+                    7
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+query:
+  name: test
+  where:
+    message.value.security.securityAlt1SourceSystemCode.string:
+      eq: CDB
+    and:
+      all:
+        "message.value.security[\"com.optum.exts.eligibility.model.common.Security\"].securityPermissionInt.array":
+          .securityPermissionValue.int:
+            in:
+              - 2
+              - 5
+              - 0
+              - 3
+              - 1
+              - 7

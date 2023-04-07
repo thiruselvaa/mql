@@ -1,0 +1,80 @@
+{
+    "query": {
+        "name": "solutran",
+        "where": {
+            "any": {
+                "message.value.memberships.array": {
+                    "len(message.memberships.array)": {
+                        "gt": 0
+                    },
+                    "len" : {
+                        "message.memberships.array": {
+                            "gt": 0
+                        }
+                    },
+                    "and": [
+                        {
+                            ".hContractId.string": {
+                                "in": [
+                                    "H2226",
+                                    "R7444"
+                                ]
+                            }
+                        },
+                        {
+                            ".packageBenefitPlanCode.string": {
+                                "in": [
+                                    "001",
+                                    "002",
+                                    "003",
+                                    "004"
+                                ]
+                            }
+                        },
+                        {
+                            ".segmentId.string": {
+                                "in": [
+                                    "null",
+                                    "001",
+                                    "002",
+                                    "003",
+                                    "004"
+                                ]
+                            }
+                        },
+                        {
+                            "any": {
+                                ".membershipGroupData.array": {
+                                    ".groupNumber.string": {
+                                        "in":[
+                                            "", "12345", "100", "97008", "97007", "97006", "97005", "97004", "97003", "12830", "null", "*"
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "or": [
+                                {
+                                    ".effectiveDate.string": {
+                                        "gt": "2020-12-31"
+                                    }
+                                },
+                                {
+                                    ".effectiveDate.string": {
+                                        "gt": "2021-12-31"
+                                    }
+                                },
+                                {
+                                    ".effectiveDate.string": {
+                                        "gt": "2022-12-31"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
