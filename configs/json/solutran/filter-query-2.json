@@ -1,6 +1,7 @@
 {
   "query": {
     "name": "solutran",
+    "type": "dsl",
     "where": {
       "function": {
         "name": "len",

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/antonmedv/expr"
+	"github.com/thiruselvaa/mql/models"
 )
 
 type Tweet struct {
@@ -26,6 +27,10 @@ func main() {
 	}
 
 	fmt.Printf("result: %v\n", result)
+
+	configFile := "configs/test-filter-query.json"
+	// configFile := "configs/test-filter-query.yaml"
+	models.NewSMFConfig(configFile)
 }
 
 func mql(expression string, env interface{}) (result interface{}, err error) {
