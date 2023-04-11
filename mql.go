@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/antonmedv/expr"
+	"github.com/gookit/goutil/dump"
 	"github.com/thiruselvaa/mql/models"
 )
 
@@ -33,6 +34,24 @@ func main() {
 	models.NewSMFConfig(configFile)
 }
 
-func mql(expression string, env interface{}) (result interface{}, err error) {
-	return expr.Eval(expression, env)
+func mql(expression string, env interface{}) (interface{}, error) {
+
+	program, err := expr.Compile(expression)
+	if err != nil {
+		return nil, err
+	}
+
+	dump.V(program.Disassemble())
+	dump.V(program.Node)
+
+	if _, ok := env.(expr.Option); ok {
+		return nil, fmt.Errorf("misused expr.Eval: second argument (env) should be passed without expr.Env")
+	}
+
+	result, err := expr.Run(program, env)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, err
 }
