@@ -759,10 +759,11 @@ func Test_mql(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotResult, err := mql(tt.args.expression, tt.args.env)
-			// if (err != nil) != tt.wantErr {
-			// 	t.Errorf("mql() error = %v, wantErr %v", err, tt.wantErr)
-			// 	return
-			// }
+			if err != nil && err != tt.wantErr {
+				t.Errorf("mql() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
 			var value []byte
 			value, err = jsonutil.EncodePretty(gotResult)
 			if err != nil {
