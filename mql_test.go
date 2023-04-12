@@ -264,8 +264,8 @@ func Test_mql(t *testing.T) {
 		Message map[string]interface{} `expr:"message"`
 	}
 
-	// configFile := "configs/test-filter-query.json"
-	configFile := "configs/test-filter-query.yaml"
+	// configFile := "configs/native-filter-query.json"
+	configFile := "configs/native-filter-query.yaml"
 	smfConfig, err := models.NewSMFConfig(configFile)
 	if err != nil {
 		fmt.Printf("error parsing smf config file: %v", err)
@@ -521,7 +521,7 @@ func Test_mql(t *testing.T) {
 				// 	)
 				// `,
 
-				expression: smfConfig.Query.Where,
+				expression: whereString(smfConfig),
 
 				//
 				// expression: `
@@ -777,4 +777,11 @@ func Test_mql(t *testing.T) {
 			}
 		})
 	}
+}
+
+func whereString(smfConfig *models.SMFConfig) string {
+	if where, ok := smfConfig.Query.Where.(string); ok {
+		return where
+	}
+	return ""
 }

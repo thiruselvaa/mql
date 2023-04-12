@@ -1,5 +1,5 @@
 query:
-  name: test-filter-query
+  name: native-filter-query
   # type: dsl
   where: |-
     message.security["com.optum.exts.eligibility.model.common.Security"].securitySourceSystemCode.string == "${SMF_SOURCE_CODE}"

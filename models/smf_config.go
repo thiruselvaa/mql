@@ -12,9 +12,9 @@ type SMFConfig struct {
 }
 
 type QueryConfig struct {
-	Name  string `mapstructure:"name" validate:"required"`
-	Type  string `mapstructure:"type" default:"native"`
-	Where string `mapstructure:"where" validate:"required"`
+	Name  string      `mapstructure:"name" validate:"required"`
+	Type  string      `mapstructure:"type" default:"native"`
+	Where interface{} `mapstructure:"where" validate:"required"`
 }
 
 func NewSMFConfig(file string) (cfg *SMFConfig, err error) {

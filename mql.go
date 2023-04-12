@@ -5,6 +5,7 @@ import (
 
 	"github.com/antonmedv/expr"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/jsonutil"
 	"github.com/thiruselvaa/mql/models"
 )
 
@@ -29,8 +30,8 @@ func main() {
 
 	fmt.Printf("result: %v\n", result)
 
-	configFile := "configs/test-filter-query.json"
-	// configFile := "configs/test-filter-query.yaml"
+	// configFile := "configs/native-filter-query.json"
+	configFile := "configs/native-filter-query.yaml"
 	models.NewSMFConfig(configFile)
 }
 
@@ -42,7 +43,14 @@ func mql(expression string, env interface{}) (interface{}, error) {
 	}
 
 	dump.V(program.Disassemble())
+
 	dump.V(program.Node)
+	var value []byte
+	value, err = jsonutil.EncodePretty(program.Node)
+	if err != nil {
+		fmt.Printf("unable to decode the json string: %v\n", err)
+	}
+	dump.V(string(value))
 
 	if _, ok := env.(expr.Option); ok {
 		return nil, fmt.Errorf("misused expr.Eval: second argument (env) should be passed without expr.Env")
