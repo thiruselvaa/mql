@@ -1,0 +1,156 @@
+{
+  "query": {
+    "name": "solutran",
+    "type": "dsl",
+    "where": {
+      "expression": [
+        {
+          "function": {
+            "len": {
+              "field_path": "message.memberships.array"
+            },
+            "operator": "gt",
+            "value": 0
+          }
+        },
+        {
+          "field_path": "message.security.securitySourceSystemCode.string",
+          "operator": "gt",
+          "value": 0
+        },
+        {
+          "field_path": "message.memberships.active",
+          "operator": "gt",
+          "value": 0
+        },
+        {
+          "and": [
+            {
+              "field_path": "message.memberships.active",
+              "operator": "gt",
+              "value": 0
+            },
+            {
+              "and": [
+                {
+                  "and": [
+                    {
+                      "and": [
+                        {
+                          "and": [
+                            {
+                              "and": [],
+                              "or": [],
+                              "not": []
+                            }
+                          ]
+                        }
+                      ],
+                      "or": [],
+                      "not": []
+                    }
+                  ]
+                }
+              ],
+              "or": [],
+              "not": []
+            }
+          ]
+        },
+        {
+          "or": [
+            {
+              "field_path": "message.memberships.active",
+              "operator": "gt",
+              "value": 0
+            },
+            {
+              "and": [],
+              "or": [],
+              "not": []
+            }
+          ]
+        },
+        {
+          "not": [
+            {
+              "field_path": "message.memberships.active",
+              "operator": "gt",
+              "value": 0
+            },
+            {
+              "and": []
+            },
+            {
+              "or": []
+            },
+            {
+              "not": []
+            }
+          ]
+        },
+        {
+          "array_function": {
+            "any": {
+              "field_path": "message.value.memberships.array[:]",
+              "expression": [
+                {
+                  "field_path": "#.hContractId.string",
+                  "operator": "in",
+                  "value": [
+                    "H2226",
+                    "R7444"
+                  ]
+                },
+                {
+                  "and": [
+                    {
+                      "field_path": "#.packageBenefitPlanCode.string",
+                      "operator": "in",
+                      "value": [
+                        "001",
+                        "002",
+                        "003",
+                        "004"
+                      ]
+                    },
+                    {
+                      "field_path": "#.segmentId.string",
+                      "operator": "in",
+                      "value": [
+                        "null",
+                        "001",
+                        "002",
+                        "003",
+                        "004"
+                      ]
+                    },
+                    {
+                      "or": [
+                        {
+                          "field_path": "#.effectiveDate.string",
+                          "operator": "gt",
+                          "value": "2020-12-31"
+                        },
+                        {
+                          "field_path": "#.effectiveDate.string",
+                          "operator": "gt",
+                          "value": "2021-12-31"
+                        },
+                        {
+                          "field_path": "#.effectiveDate.string",
+                          "operator": "gt",
+                          "value": "2022-12-31"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

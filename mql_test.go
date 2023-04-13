@@ -522,6 +522,7 @@ func Test_mql(t *testing.T) {
 				// `,
 
 				expression: whereString(smfConfig),
+				// expression: "true",
 
 				//
 				// expression: `
@@ -763,6 +764,8 @@ func Test_mql(t *testing.T) {
 				t.Errorf("mql() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
+			fmt.Printf("SMF Config: %v", smfConfig)
 
 			var value []byte
 			value, err = jsonutil.EncodePretty(gotResult)

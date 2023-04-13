@@ -1,0 +1,8 @@
+query:
+  name: solutran
+  type: dsl
+  where:
+    len:
+      field_path: message.memberships.array
+    operator: gt
+    value: 0

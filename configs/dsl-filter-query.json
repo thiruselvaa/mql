@@ -1,0 +1,440 @@
+{
+  "query": {
+    "name": "solutran",
+    "type": "dsl",
+    "where": [
+      {
+        "expression": {
+          "field_path": "message.security.securitySourceSystemCode.string",
+          "operator": "gt",
+          "value": 0
+        }
+      },
+      {
+        "not": [
+          {
+            "expression": {
+              "field_path": "message.security.securitySourceSystemCode.string",
+              "operator": "gt",
+              "value": 0
+            }
+          },
+          {
+            "not": []
+          },
+          {
+            "and": []
+          },
+          {
+            "or": []
+          }
+        ],
+        "and": [
+          {
+            "expression": {
+              "field_path": "message.security.securitySourceSystemCode.string",
+              "operator": "gt",
+              "value": 0
+            }
+          },
+          {
+            "not": []
+          },
+          {
+            "and": []
+          },
+          {
+            "or": []
+          }
+        ],
+        "or": [
+          {
+            "expression": {
+              "field_path": "message.security.securitySourceSystemCode.string",
+              "operator": "gt",
+              "value": 0
+            }
+          },
+          {
+            "not": []
+          },
+          {
+            "and": []
+          },
+          {
+            "or": []
+          }
+        ],
+        "function": {
+          "len": {
+            "field_path": "message.memberships.array",
+            "comparision": {
+              "operator": "gt",
+              "value": 0
+            }
+          },
+          "all": {
+            "field_path": "message.value.memberships.array[:]",
+            "where": {
+              "expression": [
+                {
+                  "field_path": "#.hContractId.string",
+                  "operator": "in",
+                  "value": [
+                    "H2226",
+                    "R7444"
+                  ]
+                }
+              ],
+              "and": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              },
+              "or": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              },
+              "not": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "any": {
+            "field_path": "message.value.memberships.array[:]",
+            "where": {
+              "expression": [
+                {
+                  "field_path": "#.hContractId.string",
+                  "operator": "in",
+                  "value": [
+                    "H2226",
+                    "R7444"
+                  ]
+                }
+              ],
+              "and": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              },
+              "or": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              },
+              "not": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "one": {
+            "field_path": "message.value.memberships.array[:]",
+            "where": {
+              "expression": [
+                {
+                  "field_path": "#.hContractId.string",
+                  "operator": "in",
+                  "value": [
+                    "H2226",
+                    "R7444"
+                  ]
+                }
+              ],
+              "and": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              },
+              "or": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              },
+              "not": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "none": {
+            "field_path": "message.value.memberships.array[:]",
+            "where": {
+              "expression": [
+                {
+                  "field_path": "#.hContractId.string",
+                  "operator": "in",
+                  "value": [
+                    "H2226",
+                    "R7444"
+                  ]
+                }
+              ],
+              "and": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              },
+              "or": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              },
+              "not": {
+                "expression": [
+                  {
+                    "field_path": "#.packageBenefitPlanCode.string",
+                    "operator": "in",
+                    "value": [
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  },
+                  {
+                    "field_path": "#.segmentId.string",
+                    "operator": "in",
+                    "value": [
+                      "null",
+                      "001",
+                      "002",
+                      "003",
+                      "004"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
