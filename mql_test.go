@@ -523,6 +523,7 @@ func Test_mql(t *testing.T) {
 
 				expression: whereString(smfConfig),
 				// expression: "true",
+				// expression: "true or false",
 
 				//
 				// expression: `

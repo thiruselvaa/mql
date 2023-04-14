@@ -1,0 +1,63 @@
+{
+  "query": {
+    "name": "solutran",
+    "type": "dsl",
+    "where": {
+      "condition": [
+        {
+          "field_path": "message.security.securitySourceSystemCode.string",
+          "operator": "gt",
+          "value": 0
+        },
+        {
+          "not": [
+            {
+              "field_path": "message.security.securitySourceSystemCode.string",
+              "operator": "gt",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "and": [
+            {
+              "field_path": "message.security.securitySourceSystemCode.string",
+              "operator": "gt",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "or": [
+            {
+              "field_path": "message.security.securitySourceSystemCode.string",
+              "operator": "gt",
+              "value": 0
+            }
+          ]
+        }
+      ],
+      "not": [
+        {
+          "field_path": "message.security.securitySourceSystemCode.string",
+          "operator": "gt",
+          "value": 0
+        }
+      ],
+      "and": [
+        {
+          "field_path": "message.security.securitySourceSystemCode.string",
+          "operator": "gt",
+          "value": 0
+        }
+      ],
+      "or": [
+        {
+          "field_path": "message.security.securitySourceSystemCode.string",
+          "operator": "gt",
+          "value": 0
+        }
+      ]
+    }
+  }
+}

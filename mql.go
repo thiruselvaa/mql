@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/antonmedv/expr"
+	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/jsonutil"
 	"github.com/thiruselvaa/mql/models"
 )
 
@@ -37,7 +39,17 @@ func main() {
 	// models.NewDSLQueryConfig(qConfigFile)
 
 	dslConfigFile := "configs/dsl-filter-query.json"
-	models.NewDSLConfig(dslConfigFile)
+	dslConfig, err := models.NewDSLConfig(dslConfigFile)
+	if err != nil {
+		fmt.Printf("error parsing smf config file: %v", err)
+		return
+	}
+	var value []byte
+	value, err = jsonutil.EncodePretty(dslConfig)
+	if err != nil {
+		fmt.Printf("unable to decode the json string: %v\n", err)
+	}
+	dump.V(string(value))
 }
 
 func mql(expression string, env interface{}) (interface{}, error) {
