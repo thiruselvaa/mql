@@ -48,6 +48,7 @@ func main() {
 	}
 	var value []byte
 	value, err = jsonutil.EncodePretty(dslConfig)
+	// value, err = jsonutil.Encode(dslConfig)
 	if err != nil {
 		fmt.Printf("unable to decode the json string: %v\n", err)
 	}
