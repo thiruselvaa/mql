@@ -38,8 +38,10 @@ func main() {
 	// // qConfigFile := "configs/dsl-filter-query.yaml"
 	// models.NewDSLQueryConfig(qConfigFile)
 
-	dslConfigFile := "configs/dsl-filter-query.json"
-	dslConfig, err := models.NewDSLConfig(dslConfigFile)
+	// dslConfigFile := "configs/dsl-filter-query.json"
+	// dslConfig, err := models.NewDSLConfig(dslConfigFile)
+	dslConfigFile := "configs/dsl-filter-config.json"
+	dslConfig, err := models.NewDSLFilterConfig(dslConfigFile)
 	if err != nil {
 		fmt.Printf("error parsing smf config file: %v", err)
 		return

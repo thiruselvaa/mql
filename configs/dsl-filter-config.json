@@ -1,0 +1,173 @@
+{
+  "filter": {
+    "name": "test",
+    "type": "dsl",
+    "condition": [
+      {
+        "not": [
+          {
+            "expression": {
+              "field_path": "message.string",
+              "operator": "gt",
+              "value": 0
+            }
+          },
+          {
+            "and": [
+              {
+                "expression": {
+                  "field_path": "message.string",
+                  "operator": "gt",
+                  "value": 0
+                }
+              },
+              {
+                "not": [
+                  {
+                    "expression": {
+                      "field_path": "message.string",
+                      "operator": "gt",
+                      "value": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "or": [
+                  {
+                    "expression": {
+                      "field_path": "message.string",
+                      "operator": "gt",
+                      "value": 0
+                    }
+                  },
+                  {
+                    "not": [
+                      {
+                        "expression": {
+                          "field_path": "message.string",
+                          "operator": "gt",
+                          "value": 0
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "and": [
+                      {
+                        "expression": {
+                          "field_path": "message.string",
+                          "operator": "gt",
+                          "value": 0
+                        }
+                      },
+                      {
+                        "not": [
+                          {
+                            "expression": {
+                              "field_path": "message.string",
+                              "operator": "gt",
+                              "value": 0
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "or": [
+                          {
+                            "expression": {
+                              "field_path": "message.string",
+                              "operator": "gt",
+                              "value": 0
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "or": [
+              {
+                "expression": {
+                  "field_path": "message.string",
+                  "operator": "gt",
+                  "value": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "and": [
+          {
+            "expression": {
+              "field_path": "message.string",
+              "operator": "gt",
+              "value": 0
+            }
+          },
+          {
+            "not": [
+              {
+                "expression": {
+                  "field_path": "message.string",
+                  "operator": "gt",
+                  "value": 0
+                }
+              }
+            ]
+          },
+          {
+            "or": [
+              {
+                "expression": {
+                  "field_path": "message.string",
+                  "operator": "gt",
+                  "value": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "or": [
+          {
+            "expression": {
+              "field_path": "message.string",
+              "operator": "gt",
+              "value": 0
+            }
+          },
+          {
+            "not": [
+              {
+                "expression": {
+                  "field_path": "message.string",
+                  "operator": "gt",
+                  "value": 0
+                }
+              }
+            ]
+          },
+          {
+            "and": [
+              {
+                "expression": {
+                  "field_path": "message.string",
+                  "operator": "gt",
+                  "value": 0
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
