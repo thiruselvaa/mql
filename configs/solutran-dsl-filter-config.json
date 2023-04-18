@@ -1,0 +1,125 @@
+{
+  "filter": {
+    "name": "solutran",
+    "type": "dsl",
+    "condition": {
+      "function": [
+        {
+          "len": {
+            "field_path": "message.memberships.array",
+            "comparision": {
+              "operator": "gt",
+              "value": 0
+            }
+          }
+        },
+        {
+          "any": {
+            "field_path": "message.value.memberships.array[:]",
+            "condition": {
+              "expression": [
+                {
+                  "field_path": "#.hContractId.string",
+                  "operator": "in",
+                  "value": [
+                    "H2226",
+                    "R7444"
+                  ]
+                }
+              ],
+              "and": [
+                {
+                  "expression": [
+                    {
+                      "field_path": "#.packageBenefitPlanCode.string",
+                      "operator": "in",
+                      "value": [
+                        "001",
+                        "002",
+                        "003",
+                        "004"
+                      ]
+                    },
+                    {
+                      "field_path": "#.segmentId.string",
+                      "operator": "in",
+                      "value": [
+                        "null",
+                        "001",
+                        "002",
+                        "003",
+                        "004"
+                      ]
+                    }
+                  ],
+                  "function": [
+                    {
+                      "any": {
+                        "field_path": "#.membershipGroupData.array[:]",
+                        "condition": {
+                          "and": [
+                            {
+                              "expression": [
+                                {
+                                  "field_path": "#.groupNumber.string",
+                                  "operator": "in",
+                                  "value": [
+                                    "",
+                                    "12345",
+                                    "100",
+                                    "97008",
+                                    "97007",
+                                    "97006",
+                                    "97005",
+                                    "97004",
+                                    "97003",
+                                    "12830",
+                                    "null",
+                                    "*"
+                                  ]
+                                }
+                              ],
+                              "or": [
+                                {
+                                  "expression": [
+                                    {
+                                      "field_path": "#.effectiveDate.string",
+                                      "operator": "gt",
+                                      "value": "2020-12-31"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "expression": [
+                                    {
+                                      "field_path": "#.effectiveDate.string",
+                                      "operator": "gt",
+                                      "value": "2021-12-31"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "expression": [
+                                    {
+                                      "field_path": "#.effectiveDate.string",
+                                      "operator": "gt",
+                                      "value": "2022-12-31"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
