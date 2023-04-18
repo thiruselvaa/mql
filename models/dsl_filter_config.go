@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/creasty/defaults"
 	"github.com/gookit/config/v2"
@@ -19,72 +18,77 @@ type BooleanExpression struct {
 	Operator  string `mapstructure:"operator,omitempty"`
 	Value     any    `mapstructure:"value,omitempty"`
 }
+type BooleanExpressions []BooleanExpression
 
 func (e BooleanExpression) String() string {
 	return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, e.Value)
 }
 
-type NotLogicalCondition []Not
 type Not struct {
-	Expression []BooleanExpression `mapstructure:"expression,omitempty"`
-	And        AndLogicalCondition `mapstructure:"and,omitempty"`
-	Or         OrLogicalCondition  `mapstructure:"or,omitempty"`
+	Expression *BooleanExpressions   `mapstructure:"expression,omitempty"`
+	And        *AndLogicalConditions `mapstructure:"and,omitempty"`
+	Or         *OrLogicalConditions  `mapstructure:"or,omitempty"`
+	Function   *BuiltInFunctions     `mapstructure:"function,omitempty"`
 }
+type NotLogicalConditions []Not
 
-type AndLogicalCondition []And
 type And struct {
-	Expression []BooleanExpression `mapstructure:"expression,omitempty"`
-	Not        NotLogicalCondition `mapstructure:"not,omitempty"`
-	Or         OrLogicalCondition  `mapstructure:"or,omitempty"`
+	Expression *BooleanExpressions   `mapstructure:"expression,omitempty"`
+	Not        *NotLogicalConditions `mapstructure:"not,omitempty"`
+	Or         *OrLogicalConditions  `mapstructure:"or,omitempty"`
+	Function   *BuiltInFunctions     `mapstructure:"function,omitempty"`
 }
+type AndLogicalConditions []And
 
-type OrLogicalCondition []Or
 type Or struct {
-	Expression []BooleanExpression `mapstructure:"expression,omitempty"`
-	Not        NotLogicalCondition `mapstructure:"not,omitempty"`
-	And        AndLogicalCondition `mapstructure:"and,omitempty"`
+	Expression *BooleanExpressions   `mapstructure:"expression,omitempty"`
+	Not        *NotLogicalConditions `mapstructure:"not,omitempty"`
+	And        *AndLogicalConditions `mapstructure:"and,omitempty"`
+	Function   *BuiltInFunctions     `mapstructure:"function,omitempty"`
 }
+type OrLogicalConditions []Or
 
 type Comparision struct {
 	Operator string `mapstructure:"operator"`
 	Value    any    `mapstructure:"value"`
 }
-type Len struct {
+type ArrayLengthFunction struct {
 	FieldPath   string      `mapstructure:"field_path"`
 	Comparision Comparision `mapstructure:"comparision"`
 }
-type All struct {
-	FieldPath string            `mapstructure:"field_path"`
-	Condition []FilterCondition `mapstructure:"condition"`
-}
-type Any struct {
-	FieldPath string            `mapstructure:"field_path"`
-	Condition []FilterCondition `mapstructure:"condition"`
-}
-type One struct {
-	FieldPath string            `mapstructure:"field_path"`
-	Condition []FilterCondition `mapstructure:"condition"`
-}
-type None struct {
-	FieldPath string            `mapstructure:"field_path"`
-	Condition []FilterCondition `mapstructure:"condition"`
+
+type ArrayElementMatchFunction struct {
+	FieldPath string          `mapstructure:"field_path"`
+	Condition FilterCondition `mapstructure:"condition"`
 }
 
-type Function struct {
-	Len  Len  `mapstructure:"len,omitempty"`
-	All  All  `mapstructure:"all,omitempty"`
-	Any  Any  `mapstructure:"any,omitempty"`
-	One  One  `mapstructure:"one,omitempty"`
-	None None `mapstructure:"none,omitempty"`
-}
+type AllArrayElementMatchFunction ArrayElementMatchFunction
+type AnyArrayElementMatchFunction ArrayElementMatchFunction
+type OneArrayElementMatchFunction ArrayElementMatchFunction
+type NoneArrayElementMatchFunction ArrayElementMatchFunction
 
-// type LogicalCondition []interface{}
+type BuiltInFunction struct {
+	Len  *ArrayLengthFunction           `mapstructure:"len,omitempty"`
+	All  *AllArrayElementMatchFunction  `mapstructure:"all,omitempty"`
+	Any  *AnyArrayElementMatchFunction  `mapstructure:"any,omitempty"`
+	One  *OneArrayElementMatchFunction  `mapstructure:"one,omitempty"`
+	None *NoneArrayElementMatchFunction `mapstructure:"none,omitempty"`
+}
+type BuiltInFunctions []BuiltInFunction
+
+// type LogicalCondition struct {
+// 	Not *NotLogicalConditions `mapstructure:"not,omitempty"`
+// 	And *AndLogicalConditions `mapstructure:"and,omitempty"`
+// 	Or  *OrLogicalConditions  `mapstructure:"or,omitempty"`
+// }
+
 type FilterCondition struct {
-	Expression []BooleanExpression `mapstructure:"expression,omitempty"`
-	Not        NotLogicalCondition `mapstructure:"not,omitempty"`
-	And        AndLogicalCondition `mapstructure:"and,omitempty"`
-	Or         OrLogicalCondition  `mapstructure:"or,omitempty"`
-	Function   Function            `mapstructure:"function,omitempty"`
+	Expression *BooleanExpressions   `mapstructure:"expression,omitempty"`
+	Not        *NotLogicalConditions `mapstructure:"not,omitempty"`
+	And        *AndLogicalConditions `mapstructure:"and,omitempty"`
+	Or         *OrLogicalConditions  `mapstructure:"or,omitempty"`
+	Function   *BuiltInFunctions     `mapstructure:"function,omitempty"`
+	// LogicalCondition
 }
 
 // func (f FilterCondition) String() string {
@@ -98,20 +102,13 @@ type FilterCondition struct {
 // }
 
 type Filter struct {
-	Name      string            `mapstructure:"name"`
-	Type      string            `mapstructure:"type"`
-	Condition []FilterCondition `mapstructure:"condition"`
+	Name      string          `mapstructure:"name"`
+	Type      string          `mapstructure:"type"`
+	Condition FilterCondition `mapstructure:"condition"`
 }
 
 func (f Filter) String() string {
-	// var str StringBuilder
-	var str []string
-	for idx, c := range f.Condition {
-		str = append(str, fmt.Sprintf("Filter Condition(%v):%+v", idx, c.Expression))
-	}
-
-	return strings.Join(str, "")
-	// fmt.Sprintf("Filter Name:(%v) Type:(%v) and Condition:(%+v)", f.Name, f.Type, f.Condition)
+	return fmt.Sprintf("Filter Name:(%v) Type:(%v) and Condition:(%+v)", f.Name, f.Type, f.Condition)
 }
 
 func NewDSLFilterConfig(file string) (cfg *DSLFilterConfig, err error) {
@@ -129,7 +126,6 @@ func NewDSLFilterConfig(file string) (cfg *DSLFilterConfig, err error) {
 	dump.V(cfg)
 
 	defaults.MustSet(cfg)
-
 	dump.V(cfg)
 
 	fmt.Println(cfg.Filter.String())
