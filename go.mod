@@ -7,6 +7,7 @@ require (
 	github.com/creasty/defaults v1.7.0
 	github.com/gookit/config/v2 v2.2.1
 	github.com/gookit/goutil v0.6.8
+	github.com/thoas/go-funk v0.9.3
 )
 
 require (
