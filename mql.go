@@ -40,7 +40,8 @@ func main() {
 
 	// dslConfigFile := "configs/dsl-filter-query.json"
 	// dslConfig, err := models.NewDSLConfig(dslConfigFile)
-	dslConfigFile := "configs/dsl-filter-config.json"
+	// dslConfigFile := "configs/dsl-filter-config.json"
+	dslConfigFile := "configs/solutran-dsl-filter-config.json"
 	dslConfig, err := models.NewDSLFilterConfig(dslConfigFile)
 	if err != nil {
 		fmt.Printf("error parsing smf config file: %v", err)
