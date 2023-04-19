@@ -3,6 +3,13 @@
     "name": "solutran",
     "type": "dsl",
     "condition": {
+      "expression": [
+        {
+          "field_path": "message.security[\"com.optum.exts.eligibility.model.common.Security\"].securitySourceSystemCode.string",
+          "operator": "eq",
+          "value": "${SMF_SOURCE_CODE}"
+        }
+      ],
       "function": [
         {
           "len": {

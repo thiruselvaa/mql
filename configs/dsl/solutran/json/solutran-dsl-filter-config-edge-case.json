@@ -1,0 +1,38 @@
+{
+  "filter": {
+    "name": "solutran",
+    "type": "dsl",
+    "condition": {
+      "expression": [
+        {
+          "field_path": ".expr0.string",
+          "operator": "in",
+          "value": [
+            "H2226",
+            "R7444"
+          ]
+        }
+      ],
+      "not": [
+        {
+          
+        }
+      ],
+      "and": [
+        {
+          
+        }
+      ],
+      "or": [
+        {
+          
+        }
+      ],
+      "function": [
+        {
+          
+        }
+      ]
+    }
+  }
+}

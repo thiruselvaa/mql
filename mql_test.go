@@ -265,7 +265,8 @@ func Test_mql(t *testing.T) {
 	}
 
 	// configFile := "configs/native-filter-query.json"
-	configFile := "configs/native/native-filter-query.yaml"
+	// configFile := "configs/native/native-filter-query.yaml"
+	configFile := "configs/native/test-filter-query.yaml"
 	smfConfig, err := models.NewSMFConfig(configFile)
 	if err != nil {
 		fmt.Printf("error parsing smf config file: %v", err)
@@ -521,11 +522,26 @@ func Test_mql(t *testing.T) {
 				// 	)
 				// `,
 
-				// expression: whereString(smfConfig),
+				expression: whereString(smfConfig),
 				// expression: "true",
 				// expression: "true or false",
 				// expression: "len(message.memberships.array) > 0",
-				expression: "(len(message.memberships.array) > 0)",
+				// expression: "(len(message.memberships.array) > 0)and len(message.memberships.array) > 0",
+				// expression: "(len(message.memberships.array) > 0)and(len(message.memberships.array) > 0)",
+				// expression: "true and (true)",
+				// expression: `
+				//   (
+				// 	message.security["com.optum.exts.eligibility.model.common.Security"].securitySourceSystemCode.string == 'CDB'
+				//   )
+				//   or
+				//   (
+				// 	message.security["com.optum.exts.eligibility.model.common.Security"].securitySourceSystemCode.string == 'cdb'
+				//   )
+				//   or
+				//   (
+				// 	message.security["com.optum.exts.eligibility.model.common.Security"].securitySourceSystemCode.string == 'cDB'
+				//   )
+				// `,
 
 				//
 				// expression: `
