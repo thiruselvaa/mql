@@ -40,7 +40,7 @@ func (e BooleanExpressions) String() string {
 	}
 	fmt.Printf("BooleanExpressions.String: %v\n", sb.String())
 
-	return sb.String()
+	return fmt.Sprintf("(%v)", sb.String())
 }
 
 type NotLogicalCondition struct {
@@ -57,34 +57,38 @@ func (n NotLogicalCondition) String() string {
 	)
 
 	if !funk.IsEmpty(n.Expression) && len(*n.Expression) > 0 {
-		fmt.Println("add EXPRESSION to tmp array")
+		fmt.Println("NotLogicalCondition: add EXPRESSION to tmp array")
 		tmp = append(tmp, n.Expression)
 	}
 	if !funk.IsEmpty(n.And) && len(*n.And) > 0 {
-		fmt.Println("add AND to tmp array")
+		fmt.Println("NotLogicalCondition: add AND to tmp array")
 		tmp = append(tmp, n.And)
 	}
 	if !funk.IsEmpty(n.Or) && len(*n.Or) > 0 {
-		fmt.Println("add OR to tmp array")
+		fmt.Println("NotLogicalCondition: add OR to tmp array")
 		tmp = append(tmp, n.Or)
 	}
 	if !funk.IsEmpty(n.Function) && len(*n.Function) > 0 {
-		fmt.Println("add FUNCTION to tmp array")
+		fmt.Println("NotLogicalCondition: add FUNCTION to tmp array")
 		tmp = append(tmp, n.Function)
 	}
 
 	dump.V(tmp)
 
 	for idx, v := range tmp {
-		if funk.IsEmpty(v) {
-			if idx == 0 || idx == len(tmp) {
-				fmt.Fprintf(&sb, "%v", v)
-			} else {
-				fmt.Fprintf(&sb, " and %v", v)
-			}
+		if idx == 0 || idx == len(tmp) {
+			fmt.Printf("NotLogicalCondition: if block: %v\n", v)
+			fmt.Fprintf(&sb, "%v", v)
+		} else {
+			fmt.Printf("NotLogicalCondition: else block: %v\n", v)
+			fmt.Fprintf(&sb, " and %v", v)
 		}
 	}
-	return fmt.Sprintf(" not (%v)", sb.String())
+
+	fmt.Printf("NotLogicalCondition: sb.String is %v\n", sb.String())
+
+	// return fmt.Sprintf(" not (%v)", sb.String())
+	return sb.String()
 }
 
 type NotLogicalConditions []NotLogicalCondition
@@ -94,15 +98,17 @@ func (c NotLogicalConditions) String() string {
 	for idx, v := range c {
 		if !funk.IsEmpty(v) {
 			if idx == 0 || idx == len(c) {
-				fmt.Println("inside NotLogicalConditions if block")
+				fmt.Printf("NotLogicalConditions: if block: %v\n", v)
 				fmt.Fprintf(&sb, "%v", v)
 			} else {
-				fmt.Println("inside NotLogicalConditions else block")
+				fmt.Printf("NotLogicalConditions: else block: %v\n", v)
 				fmt.Fprintf(&sb, " and %v", v)
 			}
 		}
 	}
-	return sb.String()
+	// return fmt.Sprintf("(%v)", sb.String())
+	return fmt.Sprintf(" not (%v)", sb.String())
+	// return sb.String()
 }
 
 type AndLogicalCondition struct {
@@ -162,7 +168,7 @@ func (c AndLogicalConditions) String() string {
 			}
 		}
 	}
-	return sb.String()
+	return fmt.Sprintf("(%v)", sb.String())
 }
 
 type OrLogicalCondition struct {
@@ -179,19 +185,27 @@ func (o OrLogicalCondition) String() string {
 	)
 
 	if !funk.IsEmpty(o.Expression) && len(*o.Expression) > 0 {
-		fmt.Println("add EXPRESSION to tmp array")
-		tmp = append(tmp, o.Expression)
+		// var orBexprs BooleanExpressions
+		fmt.Println("OrLogicalCondition: add EXPRESSION to tmp array")
+		for idx, e := range *o.Expression {
+			if idx == 0 || idx == len(*o.Expression) {
+				fmt.Fprintf(&sb, "%v", e)
+			} else {
+				fmt.Fprintf(&sb, " or %v", e)
+			}
+		}
+		// tmp = append(tmp, o.Expression)
 	}
 	if !funk.IsEmpty(o.Not) && len(*o.Not) > 0 {
-		fmt.Println("add NOT to tmp array")
+		fmt.Println("OrLogicalCondition: add NOT to tmp array")
 		tmp = append(tmp, o.Not)
 	}
 	if !funk.IsEmpty(o.And) && len(*o.And) > 0 {
-		fmt.Println("add OR to tmp array")
+		fmt.Println("OrLogicalCondition: add AND to tmp array")
 		tmp = append(tmp, o.And)
 	}
 	if !funk.IsEmpty(o.Function) && len(*o.Function) > 0 {
-		fmt.Println("add FUNCTION to tmp array")
+		fmt.Println("OrLogicalCondition: add FUNCTION to tmp array")
 		tmp = append(tmp, o.Function)
 	}
 
@@ -222,7 +236,7 @@ func (c OrLogicalConditions) String() string {
 			}
 		}
 	}
-	return sb.String()
+	return fmt.Sprintf("(%v)", sb.String())
 }
 
 type Comparision struct {
@@ -399,13 +413,15 @@ func (f FilterCondition) String() string {
 
 	for idx, v := range tmp {
 		if idx == 0 || idx == len(tmp) {
-			fmt.Fprintf(&sb, "%v", v)
+			fmt.Fprintf(&sb, "\n\t(\n\t\t%v\n\t)\n\t", v)
+			// fmt.Fprintf(&sb, "\n\t(\n\t\t%v\n\t)\n\t", v)
 		} else {
-			fmt.Fprintf(&sb, " and (%v)", v)
+			fmt.Fprintf(&sb, "and\n\t(\n\t\t%v\n\t)\n", v)
+			// fmt.Fprintf(&sb, "and\n\t(\n\t\t%v\n\t)\n", v)
 		}
 	}
 
-	return sb.String()
+	return fmt.Sprintf("\n(%v)", sb.String())
 }
 
 type Filter struct {

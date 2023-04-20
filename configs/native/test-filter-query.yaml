@@ -18,36 +18,36 @@ query:
             #.hContractId.string in ['H2226', 'R7444']
           ) 
           and 
+          (
             (
+              #.packageBenefitPlanCode.string in ['001', '002', '003', '004']
+            ) 
+            and 
+            (
+              #.segmentId.string in ['null', '001', '002', '003', '004']
+            ) 
+            and 
+              any
               (
-                #.packageBenefitPlanCode.string in ['001', '002', '003', '004']
-              ) 
-              and 
-              (
-                #.segmentId.string in ['null', '001', '002', '003', '004']
-              ) 
-              and 
-                any
+                #.membershipGroupData.array[:], 
                 (
-                  #.membershipGroupData.array[:], 
-                  (
-                    #.groupNumber.string in [ '12345', '100', '97008', '97007', '97006', '97005', '97004', '97003', '12830', 'null', '*']
-                  )
+                  #.groupNumber.string in [ '12345', '100', '97008', '97007', '97006', '97005', '97004', '97003', '12830', 'null', '*']
                 )
-                and 
+              )
+              and 
+              (
                 (
-                  (
-                    #.effectiveDate.string > '2020-12-31'
-                  ) 
-                  or 
-                  (
-                    #.effectiveDate.string > '2021-12-31'
-                  ) 
-                  or
-                  (
-                    #.effectiveDate.string > '2022-12-31'
-                  )
+                  #.effectiveDate.string > '2020-12-31'
+                ) 
+                or 
+                (
+                  #.effectiveDate.string > '2021-12-31'
+                ) 
+                or
+                (
+                  #.effectiveDate.string > '2022-12-31'
                 )
               )
             )
           )
+        )

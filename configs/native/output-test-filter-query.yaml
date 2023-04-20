@@ -1,0 +1,94 @@
+query:
+  name: test-filter-query
+  # type: dsl
+  where: |-
+    (
+      (
+        not 
+        (
+          (
+            (
+              .not.expr0 eq 0
+            ) 
+            and 
+            (
+              .not.expr1 eq 1
+            )
+          ) 
+          and 
+          (
+            (
+              .not.or.expr0 eq 0
+            )
+            or
+            (
+              .not.or.expr1 eq 1
+            )
+          )
+        )
+      )
+    )
+
+    # (
+    #   (
+    #     not 
+    #     (
+    #       (
+    #         (
+    #           .not.expr0 eq 0
+    #         ) 
+    #         and 
+    #         (
+    #           .not.expr1 eq 1
+    #         )
+    #       )
+    #     ) 
+    #     and  
+    #       not 
+    #       (
+    #         (
+    #           (
+    #             .not.or.expr0 eq 0
+    #           )
+    #           or 
+    #           (
+    #             .not.or.expr1 eq 1
+    #           )
+    #         )
+    #       )
+    #   )
+    # )
+
+    (
+      (
+        .and.expr0 eq 0
+      )
+      or
+      (
+        .and.expr1 eq 1
+      )
+      not 
+      (
+        (
+          (
+            .and.or.expr0 eq 0
+          ) 
+          and 
+          (
+            .and.or.expr1 eq 1
+          )
+        )
+      ) 
+      or 
+      (
+        (
+          (
+            .and.or.expr0 eq 0
+          ) 
+          and 
+          (
+            .and.or.expr1 eq 1
+          )
+        )
+      )
+    )
