@@ -1,0 +1,57 @@
+query:
+  name: test-filter-query
+  # type: dsl
+  where: |-
+    (
+      (
+        (
+          (
+            (
+              0.or.expr0 eq 0
+            ) 
+            or 
+            (
+              0.or.expr1 eq 1
+            )
+          ) 
+          or 
+          (
+            (
+              (
+                0.or.or.expr0 eq 0
+              ) 
+            or 
+            (
+              0.or.or.expr1 eq 1
+            )
+          )
+        ) 
+        or 
+        (
+          (
+            (
+              0.or.and.expr0 eq 0
+            ) 
+            and 
+            (
+              0.or.and.expr1 eq 1
+            )
+          )
+        ) 
+        or  
+        (
+          not 
+          (
+            (
+              (
+                0.or.not.expr0 eq 0
+              ) 
+              and 
+              (
+                0.or.not.expr1 eq 1
+              )
+            )
+          )
+        )
+      )
+    )

@@ -522,12 +522,13 @@ func Test_mql(t *testing.T) {
 				// 	)
 				// `,
 
-				expression: whereString(smfConfig),
+				// expression: whereString(smfConfig),
 				// expression: "true",
 				// expression: "true or false",
 				// expression: "len(message.memberships.array) > 0",
 				// expression: "(len(message.memberships.array) > 0)and len(message.memberships.array) > 0",
 				// expression: "(len(message.memberships.array) > 0)and(len(message.memberships.array) > 0)",
+				expression: "(len(message.memberships.array) > 0) or (((len(message.memberships.array) > 0)))",
 				// expression: "true and (true)",
 				// expression: `
 				//   (

@@ -1,0 +1,34 @@
+{
+  "filter": {
+    "name": "solutran",
+    "type": "dsl",
+    "condition": {
+      "function": [
+        {
+          "len": {
+            "field_path": "message.memberships.array",
+            "comparision": {
+              "operator": "gt",
+              "value": 0
+            }
+          },
+          "one": {
+            "field_path": "message.memberships.array",
+            "condition": {
+              "expression": [
+                {
+                  "field_path": "#.hContractId.string",
+                  "operator": "in",
+                  "value": [
+                    "H2226",
+                    "R7444"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

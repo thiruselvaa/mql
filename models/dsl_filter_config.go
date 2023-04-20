@@ -31,15 +31,12 @@ func (e BooleanExpressions) String() string {
 	for idx, v := range e {
 		if !funk.IsEmpty(v) {
 			if idx == 0 || idx == len(e) {
-				fmt.Printf("BooleanExpressions: if block: %v\n", v)
 				fmt.Fprintf(&sb, "%v", v)
 			} else {
-				fmt.Printf("BooleanExpressions: else block: %v\n", v)
 				fmt.Fprintf(&sb, " and %v", v)
 			}
 		}
 	}
-	fmt.Printf("BooleanExpressions.String: %v\n", sb.String())
 
 	return fmt.Sprintf("(%v)", sb.String())
 }
@@ -51,15 +48,12 @@ func (e OrBooleanExpressions) String() string {
 	for idx, v := range e {
 		if !funk.IsEmpty(v) {
 			if idx == 0 || idx == len(e) {
-				fmt.Printf("OrBooleanExpressions: if block: %v\n", v)
 				fmt.Fprintf(&sb, "%v", v)
 			} else {
-				fmt.Printf("OrBooleanExpressions: else block: %v\n", v)
 				fmt.Fprintf(&sb, " or %v", v)
 			}
 		}
 	}
-	fmt.Printf("OrBooleanExpressions.String: %v\n", sb.String())
 
 	return fmt.Sprintf("(%v)", sb.String())
 }
@@ -73,59 +67,40 @@ type OrLogicalCondition FilterCondition
 // 	Function   *BuiltInFunctions     `mapstructure:"function,omitempty"`
 // }
 
-func (o OrLogicalCondition) String() string {
+func (c OrLogicalCondition) String() string {
 	var (
 		sb  strings.Builder
 		tmp []interface{}
 	)
 
-	if !funk.IsEmpty(o.Expression) && len(*o.Expression) > 0 {
-		// var orBexprs BooleanExpressions
-		fmt.Println("OrLogicalCondition: add EXPRESSION to tmp array")
-		// for idx, e := range *o.Expression {
-		// 	if idx == 0 || idx == len(*o.Expression) {
-		// 		fmt.Fprintf(&sb, "%v", e)
-		// 	} else {
-		// 		fmt.Fprintf(&sb, " or %v", e)
-		// 	}
-		// }
-		orBooleanExpressions := make(OrBooleanExpressions, len(*o.Expression))
-		// for idx, e := range *o.Expression {
-		// 	orBooleanExpressions[idx] = e
-		// }
-		copy(orBooleanExpressions, OrBooleanExpressions(*o.Expression))
+	if !funk.IsEmpty(c.Expression) && len(*c.Expression) > 0 {
+		orBooleanExpressions := make(OrBooleanExpressions, len(*c.Expression))
+		copy(orBooleanExpressions, OrBooleanExpressions(*c.Expression))
 		tmp = append(tmp, orBooleanExpressions)
 	}
-	if !funk.IsEmpty(o.Or) && len(*o.Or) > 0 {
-		fmt.Println("OrLogicalCondition: add OR to tmp array")
-		tmp = append(tmp, o.Or)
+	if !funk.IsEmpty(c.Or) && len(*c.Or) > 0 {
+		tmp = append(tmp, c.Or)
 	}
-	if !funk.IsEmpty(o.And) && len(*o.And) > 0 {
-		fmt.Println("OrLogicalCondition: add AND to tmp array")
-		tmp = append(tmp, o.And)
+	if !funk.IsEmpty(c.And) && len(*c.And) > 0 {
+		tmp = append(tmp, c.And)
 	}
-	if !funk.IsEmpty(o.Not) && len(*o.Not) > 0 {
-		fmt.Println("OrLogicalCondition: add NOT to tmp array")
-		tmp = append(tmp, o.Not)
+	if !funk.IsEmpty(c.Not) && len(*c.Not) > 0 {
+		tmp = append(tmp, c.Not)
 	}
-	if !funk.IsEmpty(o.Function) && len(*o.Function) > 0 {
-		fmt.Println("OrLogicalCondition: add FUNCTION to tmp array")
-		tmp = append(tmp, o.Function)
+	if !funk.IsEmpty(c.Function) && len(*c.Function) > 0 {
+		tmp = append(tmp, c.Function)
 	}
 
 	// dump.V(tmp)
 
 	for idx, v := range tmp {
 		if idx == 0 || idx == len(tmp) {
-			fmt.Printf("OrLogicalCondition: if block: %v\n", v)
 			fmt.Fprintf(&sb, "%v", v)
 		} else {
-			fmt.Printf("OrLogicalCondition: else block: %v\n", v)
 			fmt.Fprintf(&sb, " or %v", v)
 		}
 	}
 
-	// return fmt.Sprintf(" or (%v)", sb.String())
 	return sb.String()
 }
 
@@ -136,10 +111,8 @@ func (c OrLogicalConditions) String() string {
 	for idx, v := range c {
 		if !funk.IsEmpty(v) {
 			if idx == 0 || idx == len(c) {
-				fmt.Printf("OrLogicalConditions: if block: %v\n", v)
 				fmt.Fprintf(&sb, "%v", v)
 			} else {
-				fmt.Printf("OrLogicalConditions: else block: %v\n", v)
 				fmt.Fprintf(&sb, " or %v", v)
 			}
 		}
@@ -156,46 +129,38 @@ type AndLogicalCondition FilterCondition
 // 	Function   *BuiltInFunctions     `mapstructure:"function,omitempty"`
 // }
 
-func (a AndLogicalCondition) String() string {
+func (c AndLogicalCondition) String() string {
 	var (
 		sb  strings.Builder
 		tmp []interface{}
 	)
 
-	if !funk.IsEmpty(a.Expression) && len(*a.Expression) > 0 {
-		fmt.Println("AndLogicalCondition: add EXPRESSION to tmp array")
-		tmp = append(tmp, a.Expression)
+	if !funk.IsEmpty(c.Expression) && len(*c.Expression) > 0 {
+		tmp = append(tmp, c.Expression)
 	}
-	if !funk.IsEmpty(a.Or) && len(*a.Or) > 0 {
-		fmt.Println("AndLogicalCondition: add OR to tmp array")
-		tmp = append(tmp, a.Or)
+	if !funk.IsEmpty(c.Or) && len(*c.Or) > 0 {
+		tmp = append(tmp, c.Or)
 	}
-	if !funk.IsEmpty(a.And) && len(*a.And) > 0 {
-		fmt.Println("AndLogicalCondition: add AND to tmp array")
-		tmp = append(tmp, a.And)
+	if !funk.IsEmpty(c.And) && len(*c.And) > 0 {
+		tmp = append(tmp, c.And)
 	}
-	if !funk.IsEmpty(a.Not) && len(*a.Not) > 0 {
-		fmt.Println("AndLogicalCondition: add NOT to tmp array")
-		tmp = append(tmp, a.Not)
+	if !funk.IsEmpty(c.Not) && len(*c.Not) > 0 {
+		tmp = append(tmp, c.Not)
 	}
-	if !funk.IsEmpty(a.Function) && len(*a.Function) > 0 {
-		fmt.Println("AndLogicalCondition: add FUNCTION to tmp array")
-		tmp = append(tmp, a.Function)
+	if !funk.IsEmpty(c.Function) && len(*c.Function) > 0 {
+		tmp = append(tmp, c.Function)
 	}
 
 	// dump.V(tmp)
 
 	for idx, v := range tmp {
 		if idx == 0 || idx == len(tmp) {
-			fmt.Printf("AndLogicalCondition: if block: %v\n", v)
 			fmt.Fprintf(&sb, "%v", v)
 		} else {
-			fmt.Printf("AndLogicalCondition: else block: %v\n", v)
 			fmt.Fprintf(&sb, " and %v", v)
 		}
 	}
 
-	// return fmt.Sprintf(" and (%v)", sb.String())
 	return sb.String()
 }
 
@@ -206,10 +171,8 @@ func (c AndLogicalConditions) String() string {
 	for idx, v := range c {
 		if !funk.IsEmpty(v) {
 			if idx == 0 || idx == len(c) {
-				fmt.Printf("AndLogicalConditions: if block: %v\n", v)
 				fmt.Fprintf(&sb, "%v", v)
 			} else {
-				fmt.Printf("AndLogicalConditions: else block: %v\n", v)
 				fmt.Fprintf(&sb, " and %v", v)
 			}
 		}
@@ -219,55 +182,38 @@ func (c AndLogicalConditions) String() string {
 
 type NotLogicalCondition FilterCondition
 
-// type NotLogicalCondition struct {
-// 	Expression *BooleanExpressions   `mapstructure:"expression,omitempty"`
-// 	And        *AndLogicalConditions `mapstructure:"and,omitempty"`
-// 	Or         *OrLogicalConditions  `mapstructure:"or,omitempty"`
-// 	Function   *BuiltInFunctions     `mapstructure:"function,omitempty"`
-// }
-
-func (n NotLogicalCondition) String() string {
+func (c NotLogicalCondition) String() string {
 	var (
 		sb  strings.Builder
 		tmp []interface{}
 	)
 
-	if !funk.IsEmpty(n.Expression) && len(*n.Expression) > 0 {
-		fmt.Println("NotLogicalCondition: add EXPRESSION to tmp array")
-		tmp = append(tmp, n.Expression)
+	if !funk.IsEmpty(c.Expression) && len(*c.Expression) > 0 {
+		tmp = append(tmp, c.Expression)
 	}
-	if !funk.IsEmpty(n.Or) && len(*n.Or) > 0 {
-		fmt.Println("NotLogicalCondition: add OR to tmp array")
-		tmp = append(tmp, n.Or)
+	if !funk.IsEmpty(c.Or) && len(*c.Or) > 0 {
+		tmp = append(tmp, c.Or)
 	}
-	if !funk.IsEmpty(n.And) && len(*n.And) > 0 {
-		fmt.Println("NotLogicalCondition: add AND to tmp array")
-		tmp = append(tmp, n.And)
+	if !funk.IsEmpty(c.And) && len(*c.And) > 0 {
+		tmp = append(tmp, c.And)
 	}
-	if !funk.IsEmpty(n.Not) && len(*n.Not) > 0 {
-		fmt.Println("NotLogicalCondition: add OR to tmp array")
-		tmp = append(tmp, n.Not)
+	if !funk.IsEmpty(c.Not) && len(*c.Not) > 0 {
+		tmp = append(tmp, c.Not)
 	}
-	if !funk.IsEmpty(n.Function) && len(*n.Function) > 0 {
-		fmt.Println("NotLogicalCondition: add FUNCTION to tmp array")
-		tmp = append(tmp, n.Function)
+	if !funk.IsEmpty(c.Function) && len(*c.Function) > 0 {
+		tmp = append(tmp, c.Function)
 	}
 
 	// dump.V(tmp)
 
 	for idx, v := range tmp {
 		if idx == 0 || idx == len(tmp) {
-			fmt.Printf("NotLogicalCondition: if block: %v\n", v)
 			fmt.Fprintf(&sb, "%v", v)
 		} else {
-			fmt.Printf("NotLogicalCondition: else block: %v\n", v)
 			fmt.Fprintf(&sb, " and %v", v)
 		}
 	}
 
-	fmt.Printf("NotLogicalCondition: sb.String is %v\n", sb.String())
-
-	// return fmt.Sprintf(" not (%v)", sb.String())
 	return sb.String()
 }
 
@@ -278,17 +224,13 @@ func (c NotLogicalConditions) String() string {
 	for idx, v := range c {
 		if !funk.IsEmpty(v) {
 			if idx == 0 || idx == len(c) {
-				fmt.Printf("NotLogicalConditions: if block: %v\n", v)
 				fmt.Fprintf(&sb, "%v", v)
 			} else {
-				fmt.Printf("NotLogicalConditions: else block: %v\n", v)
 				fmt.Fprintf(&sb, " and %v", v)
 			}
 		}
 	}
-	// return fmt.Sprintf("(%v)", sb.String())
-	return fmt.Sprintf(" not (%v)", sb.String())
-	// return sb.String()
+	return fmt.Sprintf("(not (%v)", sb.String())
 }
 
 type Comparision struct {
@@ -321,25 +263,25 @@ func (f ArrayElementMatchFunction) String() string {
 type AllArrayElementMatchFunction ArrayElementMatchFunction
 
 func (f AllArrayElementMatchFunction) String() string {
-	return fmt.Sprintf("all(%v, %v)", f.FieldPath, f.Condition)
+	return fmt.Sprintf("(all(%v, %v))", f.FieldPath, f.Condition)
 }
 
 type AnyArrayElementMatchFunction ArrayElementMatchFunction
 
 func (f AnyArrayElementMatchFunction) String() string {
-	return fmt.Sprintf("any(%v, %v)", f.FieldPath, f.Condition)
+	return fmt.Sprintf("(any(%v, %v))", f.FieldPath, f.Condition)
 }
 
 type OneArrayElementMatchFunction ArrayElementMatchFunction
 
 func (f OneArrayElementMatchFunction) String() string {
-	return fmt.Sprintf("one(%v, %v)", f.FieldPath, f.Condition)
+	return fmt.Sprintf("(one(%v, %v))", f.FieldPath, f.Condition)
 }
 
 type NoneArrayElementMatchFunction ArrayElementMatchFunction
 
 func (f NoneArrayElementMatchFunction) String() string {
-	return fmt.Sprintf("none(%v, %v)", f.FieldPath, f.Condition)
+	return fmt.Sprintf("(none(%v, %v))", f.FieldPath, f.Condition)
 }
 
 type BuiltInFunction struct {
@@ -392,24 +334,16 @@ func (f BuiltInFunction) String() string {
 type BuiltInFunctions []BuiltInFunction
 
 func (f BuiltInFunctions) String() string {
-
 	var sb strings.Builder
 	for idx, v := range f {
 		if !funk.IsEmpty(v) {
-			fmt.Printf("IsEmpty: length of built-in functions: %v\n", len(f))
-
 			if idx == 0 || idx == len(f) {
-				fmt.Printf("idx: length of built-in functions: %v\n", len(f))
-
 				fmt.Fprintf(&sb, "%v", v)
 			} else {
-				fmt.Printf("else: length of built-in functions: %v\n", len(f))
-
 				fmt.Fprintf(&sb, " and %v", v)
 			}
 		}
 	}
-	fmt.Printf("BuiltInFunctions.String: %v\n", sb.String())
 	return sb.String()
 }
 
@@ -435,24 +369,18 @@ func (f FilterCondition) String() string {
 	)
 
 	if !funk.IsEmpty(f.Expression) && len(*f.Expression) > 0 {
-		fmt.Println("FilterCondition: add EXPRESSION to tmp array")
 		tmp = append(tmp, f.Expression)
 	}
 	if !funk.IsEmpty(f.Or) && len(*f.Or) > 0 {
-		fmt.Println("FilterCondition: add OR to tmp array")
-		dump.V(f.Or)
 		tmp = append(tmp, f.Or)
 	}
 	if !funk.IsEmpty(f.And) && len(*f.And) > 0 {
-		fmt.Println("FilterCondition: add AND to tmp array")
 		tmp = append(tmp, f.And)
 	}
 	if !funk.IsEmpty(f.Not) && len(*f.Not) > 0 {
-		fmt.Println("FilterCondition: add NOT to tmp array")
 		tmp = append(tmp, f.Not)
 	}
 	if !funk.IsEmpty(f.Function) && len(*f.Function) > 0 {
-		fmt.Println("FilterCondition: add FUNCTION to tmp array")
 		tmp = append(tmp, f.Function)
 	}
 
@@ -460,24 +388,19 @@ func (f FilterCondition) String() string {
 
 	for idx, v := range tmp {
 		if idx == 0 || idx == len(tmp) {
-			fmt.Printf("FilterCondition: if block")
-			// fmt.Printf("FilterCondition: if block: %v\n\n", v)
-			fmt.Fprintf(&sb, "\n\t(\n\t\t%v\n\t)\n\t", v)
 			// fmt.Fprintf(&sb, "\n\t(\n\t\t%v\n\t)\n\t", v)
+			fmt.Fprintf(&sb, "(%v)", v)
 		} else {
-			fmt.Printf("FilterCondition: else block")
-			// fmt.Printf("FilterCondition: else block: %v\n\n", v)
-			fmt.Fprintf(&sb, "and\n\t(\n\t\t%v\n)\n", v)
-			// fmt.Fprintf(&sb, "and\n\t(\n\t\t%v\n\t)\n", v)
+			fmt.Fprintf(&sb, "and(%v)", v)
 		}
 	}
 
-	return fmt.Sprintf("\n(%v)", sb.String())
+	return fmt.Sprintf("(%v)", sb.String())
 }
 
 type Filter struct {
 	Name      string          `mapstructure:"name"`
-	Type      string          `mapstructure:"type"`
+	Type      string          `mapstructure:"type" default:"dsl"`
 	Condition FilterCondition `mapstructure:"condition"`
 }
 
@@ -486,58 +409,25 @@ func (f Filter) String() string {
 }
 
 func NewDSLFilterConfig(file string) (cfg *DSLFilterConfig, err error) {
-	c := config.New("dsl-config").WithOptions(config.ParseEnv).WithDriver(yamlv3.Driver)
+	c := config.New("dsl-config").
+		WithOptions(config.ParseEnv).
+		WithOptions(config.ParseDefault).
+		WithDriver(yamlv3.Driver)
 	err = c.LoadExistsByFormat(config.Yaml, file)
 	if err != nil {
 		return nil, err
 	}
-
-	// var m map[string]interface{}
-	// err = c.Decode(&m)
-	// if err != nil {
-	// 	fmt.Printf("err: %v\n", err)
-	// 	return nil, err
-	// }
-	// dump.V(m)
-
-	// fmt.Printf("c.ToJSON(): %v\n", c.ToJSON())
-	// dump.V(c.ToJSON())
-
-	// var value []byte
-	// value, err = jsonutil.EncodePretty(m)
-	// if err != nil {
-	// 	fmt.Printf("unable to decode the json string: %v\n", err)
-	// }
-	// dump.V(string(value))
 
 	cfg = &DSLFilterConfig{}
 	err = c.Decode(cfg)
 	if err != nil {
 		return nil, err
 	}
+	// dump.V(cfg)
+	// defaults.MustSet(cfg)
 	dump.V(cfg)
 
-	// defaults.MustSet(cfg)
-	// dump.V(cfg)
-
-	// var value []byte
-	// value, err = jsonutil.EncodePretty(cfg)
-	// if err != nil {
-	// 	fmt.Printf("unable to decode the json string: %v\n", err)
-	// }
-	// dump.V(string(value))
-
-	// fmt.Printf("\ncfg.Filter.String: %v\n\n", cfg.Filter.String())
-
-	// if !funk.IsEmpty(cfg.Filter.Condition.Expression) {
-	// 	fmt.Printf("filter condition expressions: %+v", *cfg.Filter.Condition.Expression)
-	// }
-
 	fmt.Printf("\nfilter condition: %+v\n", cfg.Filter.Condition)
-
-	// fmt.Printf("\nfilter condition functions: %+v\n", cfg.Filter.Condition.Function)
-	// fmt.Printf("filter condition functions - len: %v\n", (*cfg.Filter.Condition.Function)[0].Len)
-	// // fmt.Printf("filter condition functions - any: %+v\n", (*cfg.Filter.Condition.Function)[1].Any)
 
 	return cfg, nil
 }

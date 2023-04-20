@@ -1,0 +1,27 @@
+query:
+  name: test-filter-query
+  # type: dsl
+  where: |-
+    (
+      (
+        (
+          len(message.memberships.array) gt 0
+        ) 
+        and 
+        (
+          one
+          (
+            message.memberships.array, 
+            (
+              (
+                (
+                  (
+                    #.hContractId.string in [H2226 R7444]
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )

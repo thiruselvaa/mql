@@ -4,90 +4,71 @@ query:
   where: |-
     (
       (
-        not 
         (
-          (
-            (
-              .not.expr0 eq 0
-            ) 
-            and 
-            (
-              .not.expr1 eq 1
-            )
-          ) 
-          and 
-          (
-            (
-              .not.or.expr0 eq 0
-            )
-            or
-            (
-              .not.or.expr1 eq 1
-            )
-          )
-        )
-      )
-    )
-
-    # (
-    #   (
-    #     not 
-    #     (
-    #       (
-    #         (
-    #           .not.expr0 eq 0
-    #         ) 
-    #         and 
-    #         (
-    #           .not.expr1 eq 1
-    #         )
-    #       )
-    #     ) 
-    #     and  
-    #       not 
-    #       (
-    #         (
-    #           (
-    #             .not.or.expr0 eq 0
-    #           )
-    #           or 
-    #           (
-    #             .not.or.expr1 eq 1
-    #           )
-    #         )
-    #       )
-    #   )
-    # )
-
-    (
-      (
-        .and.expr0 eq 0
-      )
-      or
-      (
-        .and.expr1 eq 1
-      )
-      not 
-      (
+          len(message.memberships.array) gt 0
+        ) 
+        and 
         (
+          any
           (
-            .and.or.expr0 eq 0
-          ) 
-          and 
-          (
-            .and.or.expr1 eq 1
-          )
-        )
-      ) 
-      or 
-      (
-        (
-          (
-            .and.or.expr0 eq 0
-          ) 
-          and 
-          (
-            .and.or.expr1 eq 1
+            message.value.memberships.array[:], 
+            (
+              (
+                (
+                  (
+                    #.hContractId.string in [H2226 R7444]
+                  )
+                )
+              )
+              and
+              (
+                (
+                  (
+                    #.packageBenefitPlanCode.string in [001 002 003 004]
+                  ) 
+                  and 
+                  (
+                    #.segmentId.string in [null 001 002 003 004]
+                  )
+                ) 
+                and 
+                (
+                  (
+                    (
+                      #.effectiveDate.string gt 2020-12-31
+                    )
+                  ) 
+                  or 
+                  (
+                    (
+                      #.effectiveDate.string gt 2021-12-31
+                    )
+                  ) 
+                  or 
+                  (
+                    (
+                      #.effectiveDate.string gt 2022-12-31
+                    )
+                  )
+                ) 
+                and 
+                (
+                  any
+                  (
+                    #.membershipGroupData.array[:], 
+                    (
+                      (
+                        (
+                          (
+                            #.groupNumber.string in [ 12345 100 97008 97007 97006 97005 97004 97003 12830 null *]
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
           )
         )
       )

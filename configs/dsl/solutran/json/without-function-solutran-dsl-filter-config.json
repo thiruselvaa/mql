@@ -1,0 +1,129 @@
+{
+  "filter": {
+    "name": "solutran",
+    "condition": {
+      "expression": [
+        {
+          "field_path": "0.expr0",
+          "operator": "eq",
+          "value": 0
+        },
+        {
+          "field_path": "0.expr1",
+          "operator": "eq",
+          "value": 1
+        }
+      ],
+      "or":[
+        {
+          "expression": [
+            {
+              "field_path": "0.or.expr0",
+              "operator": "eq",
+              "value": 0
+            },
+            {
+              "field_path": "0.or.expr1",
+              "operator": "eq",
+              "value": 1
+            }
+          ]
+        }
+      ],
+      "and": [
+        {
+          "expression": [
+            {
+              "field_path": "0.and.expr0",
+              "operator": "eq",
+              "value": 0
+            },
+            {
+              "field_path": "0.and.expr1",
+              "operator": "eq",
+              "value": 1
+            }
+          ],
+          "or": [
+            {
+              "expression": [
+                {
+                  "field_path": "0.and.or.expr0",
+                  "operator": "eq",
+                  "value": 0
+                },
+                {
+                  "field_path": "0.and.or.expr1",
+                  "operator": "eq",
+                  "value": 1
+                }
+              ]
+            }
+          ],
+          "and": [
+            {
+              "expression": [
+                {
+                  "field_path": "0.and.and.expr0",
+                  "operator": "eq",
+                  "value": 0
+                },
+                {
+                  "field_path": "0.and.and.expr1",
+                  "operator": "eq",
+                  "value": 1
+                }
+              ]
+            }
+          ],
+          "not": [
+            {
+              "or":[
+                {
+                  "expression": [
+                    {
+                      "field_path": "0.not.or.expr0",
+                      "operator": "eq",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "expression": [
+                    {
+                      "field_path": "0.not.or.expr1",
+                      "operator": "eq",
+                      "value": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "not":[
+                {
+                  "or":[
+                    {
+                      "expression": [
+                        {
+                          "field_path": "1.not.not.or.expr0",
+                          "operator": "eq",
+                          "value": 0
+                        },
+                        {
+                          "field_path": "1.not.not.or.expr1",
+                          "operator": "eq",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
