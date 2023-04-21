@@ -1,0 +1,59 @@
+{
+  "filter": {
+    "name": "solutran",
+    "type": "dsl",
+    "condition": {
+      "expression": [
+        {
+          "field_path": "value.eq.string",
+          "operator": "eq",
+          "value": "1"
+        },
+        {
+          "field_path": "value.eq.int",
+          "operator": "eq",
+          "value": 1
+        },
+        {
+          "field_path": "value.eq.-int",
+          "operator": "eq",
+          "value": -1
+        },
+        {
+          "field_path": "value.eq.-float",
+          "operator": "eq",
+          "value": 1.123
+        },
+        {
+          "field_path": "value.eq.float",
+          "operator": "eq",
+          "value": -1.123
+        },
+        {
+          "field_path": "value.in.string",
+          "operator": "in",
+          "value": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "field_path": "value.in.int",
+          "operator": "in",
+          "value": [
+            1,
+            2
+          ]
+        },
+        {
+          "field_path": "value.in.float",
+          "operator": "in",
+          "value": [
+            1.123,
+            2.123
+          ]
+        }
+      ]
+    }
+  }
+}

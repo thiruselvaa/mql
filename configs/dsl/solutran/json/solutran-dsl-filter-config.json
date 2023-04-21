@@ -8,14 +8,14 @@
           "len": {
             "field_path": "message.memberships.array",
             "comparision": {
-              "operator": "gt",
+              "operator": ">",
               "value": 0
             }
           }
         },
         {
           "any": {
-            "field_path": "message.value.memberships.array[:]",
+            "field_path": "message.memberships.array[:]",
             "condition": {
               "expression": [
                 {
@@ -90,7 +90,7 @@
                       "expression": [
                         {
                           "field_path": "#.effectiveDate.string",
-                          "operator": "gt",
+                          "operator": ">",
                           "value": "2020-12-31"
                         }
                       ]
@@ -99,7 +99,7 @@
                       "expression": [
                         {
                           "field_path": "#.effectiveDate.string",
-                          "operator": "gt",
+                          "operator": ">",
                           "value": "2021-12-31"
                         }
                       ]
@@ -108,7 +108,7 @@
                       "expression": [
                         {
                           "field_path": "#.effectiveDate.string",
-                          "operator": "gt",
+                          "operator": ">",
                           "value": "2022-12-31"
                         }
                       ]

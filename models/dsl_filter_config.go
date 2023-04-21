@@ -6,7 +6,9 @@ import (
 
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/strutil"
 	"github.com/thoas/go-funk"
 )
 
@@ -21,7 +23,74 @@ type BooleanExpression struct {
 }
 
 func (e BooleanExpression) String() string {
-	return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, e.Value)
+
+	switch val := e.Value.(type) {
+	case string:
+		return fmt.Sprintf("(%v %v '%v')", e.FieldPath, e.Operator, val)
+	case int64, uint64, float64:
+		return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, val)
+	case []interface{}:
+		switch val[0].(type) {
+		case string:
+			var sb strings.Builder
+			sb.WriteByte('[')
+			for i, v := range val {
+				if i > 0 {
+					sb.WriteByte(',')
+				}
+				sb.WriteString("'")
+				sb.WriteString(strutil.QuietString(v))
+				sb.WriteString("'")
+			}
+			sb.WriteByte(']')
+			return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, sb.String())
+		default:
+			return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, arrutil.AnyToString(val))
+			// return fmt.Sprintf("(%v %v %T %v)", e.FieldPath, e.Operator, val[0], arrutil.AnyToString(val))
+		}
+	default:
+		return "error"
+	}
+
+	// return fmt.Sprintf("(%v %v %#v)", e.FieldPath, e.Operator, e.Value)
+
+	// tmp := "[1, 2, 3]"
+	// tmp := "[1.23, 2.45]"
+	// tmp := "['H2226', 'H2226']"
+	// tmp := `['H2226', 'H2226']`
+	// tmp := `["H2226", "H2226"]`
+	// return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, tmp)
+
+	// return fmt.Sprintf("(%v %v %#v)", e.FieldPath, e.Operator, `["H2226", "H2226"]`)
+	// return fmt.Sprintf("(%v %v %#v)", e.FieldPath, e.Operator, arrutil.AnyToStrings(e.Value))
+
+	// var sb strings.Builder
+	// fmt.Fprintf(&sb, "(%v %v float(%v))", e.FieldPath, e.Operator, e.Value)
+	// return sb.String()
+}
+
+// SliceToString convert []any to string
+func SliceToString(arr ...any) string { return ToString(arr) }
+
+// ToString simple and quickly convert []any to string
+func ToString(arr []any) string {
+	// like fmt.Println([]any(nil))
+	if arr == nil {
+		return "[]"
+	}
+
+	var sb strings.Builder
+	sb.WriteByte('[')
+
+	for i, v := range arr {
+		if i > 0 {
+			sb.WriteByte(',')
+		}
+		sb.WriteString(strutil.QuietString(v))
+	}
+
+	sb.WriteByte(']')
+	return sb.String()
 }
 
 type BooleanExpressions []BooleanExpression
@@ -405,7 +474,7 @@ type Filter struct {
 }
 
 func (f Filter) String() string {
-	return fmt.Sprintf("Filter Name:(%v) Type:(%v) and Condition:(%+v)", f.Name, f.Type, f.Condition)
+	return fmt.Sprintf("Filter Name:(%v) Type:(%v) and Condition:(%v)", f.Name, f.Type, f.Condition)
 }
 
 func NewDSLFilterConfig(file string) (cfg *DSLFilterConfig, err error) {
@@ -427,6 +496,7 @@ func NewDSLFilterConfig(file string) (cfg *DSLFilterConfig, err error) {
 	// defaults.MustSet(cfg)
 	dump.V(cfg)
 
+	// fmt.Printf("\nfilter: %v\n", cfg.Filter)
 	fmt.Printf("\nfilter condition: %+v\n", cfg.Filter.Condition)
 
 	return cfg, nil
