@@ -40,6 +40,7 @@ func main() {
 	fieldNames := "hContractId,packageBenefitPlanCode,segmentId,groupNumber,effectiveDate"
 	fieldValues := []string{
 		"H0169,003,null,*,2021-12-31",
+		"H0251,004,null,*,2021-12-31",
 		"H0169,001,null,*,2020-12-31",
 		"H0251,002,null,*,2020-12-31",
 		"H0169,002,null,*,2020-12-31",
@@ -85,12 +86,28 @@ func main() {
 		// NullLast: true,
 	}))
 
-	columnOrder := []qframe.Order{
-		{Column: csvDF.ColumnNames()[0]},
-		{Column: csvDF.ColumnNames()[1]},
-		{Column: csvDF.ColumnNames()[2]},
-		{Column: csvDF.ColumnNames()[3]},
-		{Column: csvDF.ColumnNames()[4]},
+	// columnOrder := []qframe.Order{
+	// 	{Column: csvDF.ColumnNames()[0]},
+	// 	{Column: csvDF.ColumnNames()[1]},
+	// 	{Column: csvDF.ColumnNames()[2]},
+	// 	{Column: csvDF.ColumnNames()[3]},
+	// 	{Column: csvDF.ColumnNames()[4]},
+	// }
+	// fmt.Println(csvDF.Sort(columnOrder...))
+
+	columnOrder := make([]qframe.Order, len(colNames))
+	// columnOrder := make([]qframe.Order, csvDF.Len())
+	for idx, cName := range colNames {
+		columnOrder[idx] = qframe.Order{Column: cName}
 	}
-	fmt.Println(csvDF.Sort(columnOrder...))
+	// fmt.Printf("columnOrder: %#v\n", columnOrder)
+	dump.V(columnOrder)
+
+	sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
+	fmt.Println(sortedCsvDF)
+
+	// fmt.Println(sortedCsvDF.Distinct())
+	fmt.Println(csvDF.Distinct())
+
+	// sortedCsvDF.Filter(qframe.Filter{})
 }
