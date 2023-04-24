@@ -48,6 +48,16 @@ func main() {
 		"H0169,004,null,*,2022-12-31",
 	}
 
+	// fieldValues := []string{
+	// 	"H0169,003,null,*,2021-12-31",
+	// 	"H0251,004,null,*,2021-12-31",
+	// 	"H0169,001,null,*,2020-12-31",
+	// 	"H0251,002,null,12345,2020-12-31",
+	// 	"H0169,002,null,*,2020-12-31",
+	// 	"H0251,004,null,*,2021-12-31",
+	// 	"H0169,004,null,*,2022-12-31",
+	// }
+
 	csvData := make([]string, len(fieldValues)+1)
 	for i := 0; i < len(csvData); i++ {
 		if i == 0 {
@@ -86,15 +96,6 @@ func main() {
 		// NullLast: true,
 	}))
 
-	// columnOrder := []qframe.Order{
-	// 	{Column: csvDF.ColumnNames()[0]},
-	// 	{Column: csvDF.ColumnNames()[1]},
-	// 	{Column: csvDF.ColumnNames()[2]},
-	// 	{Column: csvDF.ColumnNames()[3]},
-	// 	{Column: csvDF.ColumnNames()[4]},
-	// }
-	// fmt.Println(csvDF.Sort(columnOrder...))
-
 	columnOrder := make([]qframe.Order, len(colNames))
 	// columnOrder := make([]qframe.Order, csvDF.Len())
 	for idx, cName := range colNames {
@@ -106,8 +107,53 @@ func main() {
 	sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
 	fmt.Println(sortedCsvDF)
 
-	// fmt.Println(sortedCsvDF.Distinct())
-	fmt.Println(csvDF.Distinct())
+	searchValuesMap := map[string]string{
+		// "hContractId": "H0251",
+		// "  hContractId  ": "H0251",
+		// "hContractId  ": "H0251",
+		csvDF.ColumnNames()[0]: "H0251",
 
-	// sortedCsvDF.Filter(qframe.Filter{})
+		csvDF.ColumnNames()[1]: "002",
+		// csvDF.ColumnNames()[1]: "003",
+
+		// csvDF.ColumnNames()[2]: "",
+		csvDF.ColumnNames()[2]: "null",
+
+		// csvDF.ColumnNames()[3]: "",
+		csvDF.ColumnNames()[3]: "*",
+	}
+
+	dump.V(searchValuesMap)
+
+	eq := func(column, comparator string, arg interface{}) qframe.FilterClause {
+		return qframe.Filter{Column: column, Comparator: comparator, Arg: arg}
+	}
+
+	filteredCsvDF := sortedCsvDF.Filter(
+		qframe.And(
+			qframe.Filter{
+				Column:     csvDF.ColumnNames()[0],
+				Comparator: "=",
+				Arg:        searchValuesMap[csvDF.ColumnNames()[0]],
+			},
+			eq(csvDF.ColumnNames()[1], "=", searchValuesMap[csvDF.ColumnNames()[1]]),
+			// qframe.Filter{
+			// 	Column:     csvDF.ColumnNames()[1],
+			// 	Comparator: "=",
+			// 	Arg:        searchValuesMap[csvDF.ColumnNames()[1]],
+			// },
+			qframe.Filter{
+				Column:     csvDF.ColumnNames()[2],
+				Comparator: "=",
+				Arg:        searchValuesMap[csvDF.ColumnNames()[2]],
+			},
+			qframe.Filter{
+				Column:     csvDF.ColumnNames()[3],
+				Comparator: "=",
+				Arg:        searchValuesMap[csvDF.ColumnNames()[3]],
+			},
+		),
+	)
+
+	fmt.Println(filteredCsvDF)
 }
