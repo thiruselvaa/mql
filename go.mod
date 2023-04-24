@@ -3,6 +3,7 @@ module github.com/thiruselvaa/mql
 go 1.19
 
 require (
+	github.com/Knetic/govaluate v3.0.0+incompatible
 	github.com/antonmedv/expr v1.12.5
 	github.com/creasty/defaults v1.7.0
 	github.com/gookit/config/v2 v2.2.1

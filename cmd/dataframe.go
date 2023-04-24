@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/Knetic/govaluate"
 	"github.com/gookit/goutil/dump"
 	"github.com/tobgu/qframe"
 	"github.com/tobgu/qframe/config/csv"
+	"github.com/tobgu/qframe/filter"
 	"github.com/tobgu/qframe/types"
 )
 
@@ -107,6 +110,14 @@ func main() {
 	sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
 	fmt.Println(sortedCsvDF)
 
+	filterOperatorMap := map[string]string{
+		csvDF.ColumnNames()[0]: "=",
+		csvDF.ColumnNames()[1]: "=",
+		csvDF.ColumnNames()[2]: "=",
+		csvDF.ColumnNames()[3]: "=",
+		csvDF.ColumnNames()[4]: "after_date",
+	}
+
 	searchValuesMap := map[string]string{
 		// "hContractId": "H0251",
 		// "  hContractId  ": "H0251",
@@ -121,39 +132,117 @@ func main() {
 
 		// csvDF.ColumnNames()[3]: "",
 		csvDF.ColumnNames()[3]: "*",
+
+		csvDF.ColumnNames()[4]: "2021-12-31",
 	}
 
 	dump.V(searchValuesMap)
 
-	eq := func(column, comparator string, arg interface{}) qframe.FilterClause {
-		return qframe.Filter{Column: column, Comparator: comparator, Arg: arg}
+	eq := func(column string, arg interface{}) qframe.FilterClause {
+		return qframe.Filter{Column: column, Comparator: filter.Eq, Arg: arg}
 	}
+	// func(f float64) bool { return f > 1.2 }
+
+	afterDateComparatorFunc := func(colVal, msgVal string) bool {
+		var exprSb strings.Builder
+		exprSb.WriteString(msgVal)
+		exprSb.WriteString(">")
+		exprSb.WriteString(colVal)
+
+		// expression, err := govaluate.NewEvaluableExpression("'2014-01-02' > '2014-01-01 23:59:59'")
+
+		expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+		if err != nil {
+			return false
+		}
+		result, err := expression.Evaluate(nil)
+		if err != nil {
+			return false
+		}
+
+		fmt.Printf("afterDateComparatorFunc: result=%v\n", result)
+		return result.(bool)
+	}
+
+	after_date := func(column string, arg interface{}) qframe.FilterClause {
+		return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: arg}
+	}
+
+	filterClauses := make([]qframe.FilterClause, len(colNames))
+	for idx, cName := range colNames {
+		switch filterOperatorMap[cName] {
+		case filter.Eq:
+			filterClauses[idx] = eq(cName, searchValuesMap[cName])
+		case "after_date":
+			filterClauses[idx] = after_date(cName, searchValuesMap[cName])
+		}
+
+		// filterClauses[idx] = qframe.Filter{
+		// 	Column:     cName,
+		// 	Comparator: filterOperatorMap[cName],
+		// 	Arg:        searchValuesMap[cName],
+		// }
+	}
+	// fmt.Printf("filterClauses: %#v\n", filterClauses)
+	dump.V(filterClauses)
 
 	filteredCsvDF := sortedCsvDF.Filter(
 		qframe.And(
-			qframe.Filter{
-				Column:     csvDF.ColumnNames()[0],
-				Comparator: "=",
-				Arg:        searchValuesMap[csvDF.ColumnNames()[0]],
-			},
-			eq(csvDF.ColumnNames()[1], "=", searchValuesMap[csvDF.ColumnNames()[1]]),
-			// qframe.Filter{
-			// 	Column:     csvDF.ColumnNames()[1],
-			// 	Comparator: "=",
-			// 	Arg:        searchValuesMap[csvDF.ColumnNames()[1]],
-			// },
-			qframe.Filter{
-				Column:     csvDF.ColumnNames()[2],
-				Comparator: "=",
-				Arg:        searchValuesMap[csvDF.ColumnNames()[2]],
-			},
-			qframe.Filter{
-				Column:     csvDF.ColumnNames()[3],
-				Comparator: "=",
-				Arg:        searchValuesMap[csvDF.ColumnNames()[3]],
-			},
+			// filterClauses[0:3]...,
+			filterClauses...,
 		),
 	)
 
 	fmt.Println(filteredCsvDF)
+}
+
+/*
+Attempts to parse the [candidate] as a Time.
+Tries a series of standardized date formats, returns the Time if one applies,
+otherwise returns false through the second return.
+*/
+func tryParseTime(candidate string) (time.Time, bool) {
+
+	var ret time.Time
+	var found bool
+
+	timeFormats := [...]string{
+		time.ANSIC,
+		time.UnixDate,
+		time.RubyDate,
+		time.Kitchen,
+		time.RFC3339,
+		time.RFC3339Nano,
+		"2006-01-02",                         // RFC 3339
+		"2006-01-02 15:04",                   // RFC 3339 with minutes
+		"2006-01-02 15:04:05",                // RFC 3339 with seconds
+		"2006-01-02 15:04:05-07:00",          // RFC 3339 with seconds and timezone
+		"2006-01-02T15Z0700",                 // ISO8601 with hour
+		"2006-01-02T15:04Z0700",              // ISO8601 with minutes
+		"2006-01-02T15:04:05Z0700",           // ISO8601 with seconds
+		"2006-01-02T15:04:05.999999999Z0700", // ISO8601 with nanoseconds
+	}
+
+	for _, format := range timeFormats {
+
+		ret, found = tryParseExactTime(candidate, format)
+		if found {
+			return ret, true
+		}
+	}
+
+	return time.Now(), false
+}
+
+func tryParseExactTime(candidate string, format string) (time.Time, bool) {
+
+	var ret time.Time
+	var err error
+
+	ret, err = time.Parse(format, candidate)
+	if err != nil {
+		return time.Now(), false
+	}
+
+	return ret, true
 }
