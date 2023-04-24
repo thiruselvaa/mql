@@ -8,6 +8,7 @@ require (
 	github.com/gookit/config/v2 v2.2.1
 	github.com/gookit/goutil v0.6.8
 	github.com/thoas/go-funk v0.9.3
+	github.com/tobgu/qframe v0.3.6
 )
 
 require (
@@ -17,6 +18,7 @@ require (
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mauricelam/genny v0.0.0-20190320071652-0800202903e5 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/sync v0.1.0 // indirect

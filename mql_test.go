@@ -270,7 +270,8 @@ func Test_mql(t *testing.T) {
 	// smfConfig, err := models.NewSMFConfig(configFile)
 
 	configFile := "configs/dsl/solutran/json/solutran-dsl-filter-config.json"
-	smfConfig, err := models.NewDSLFilterConfig(configFile)
+	// smfConfig, err := models.NewDSLFilterConfig(configFile)
+	_, err = models.NewDSLFilterConfig(configFile)
 	if err != nil {
 		fmt.Printf("error parsing smf config file: %v", err)
 		return
@@ -288,7 +289,7 @@ func Test_mql(t *testing.T) {
 	}{
 		// TODO: Add test cases.
 		{
-			name: "isSourceCode equals to cdb",
+			name: "isSourceCode_equals_to_cdb",
 			args: args{
 				// expression: `any(Tweets, {.Len in [0, 1, 2, 3]})`,
 				// env: Env{
@@ -554,7 +555,7 @@ func Test_mql(t *testing.T) {
 				// 			any(#.membershipGroupData.array[:],
 				// 				(((((#.groupNumber.string in ['','12345','100','97008','97007','97006','97005','97004','97003','12830','null','*']))))))))))))))
 				// `,
-				expression: smfConfig.Filter.Condition.String(),
+				// // // expression: smfConfig.Filter.Condition.String(),
 
 				// expression: whereString(smfConfig),
 				// expression: "true",
@@ -609,7 +610,7 @@ func Test_mql(t *testing.T) {
 
 				// expression: `
 				// 	map(
-				// 		filter(message.memberships.array, len(.hContractId.string) > 0),
+				// 		filter(message.memberships.array, len(.membershipGroupData.array) > 0),
 				// 		.hContractId.string + "," +
 				// 		.packageBenefitPlanCode.string + "," +
 				// 		.segmentId.string + "," +
@@ -621,6 +622,7 @@ func Test_mql(t *testing.T) {
 				// 	)
 				// `,
 
+				//
 				// expression: `
 				// 	map(
 				// 		filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
@@ -630,6 +632,21 @@ func Test_mql(t *testing.T) {
 				// 		)
 				// 	)
 				// `,
+				//
+
+				expression: `
+					map(
+						filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+						{
+							.hContractId.string + "," +
+							.packageBenefitPlanCode.string + "," +
+							.segmentId.string + "," +
+							.effectiveDate.string
+						}
+					)
+				`,
+				// expression: `map(message.memberships.array,  map(filter(.membershipGroupData.array, .groupNumber.string matches '.*'), .groupNumber.string))`,
+
 				// expression: `len(message.memberships.array) ?? null`,
 				// expression: `message.memberships.array[:] ?? nodata`,
 				// expression: `message.memberships.array[0:][0]?.membershipGroupData.array[0:] ?? null`,
@@ -821,13 +838,15 @@ func Test_mql(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// gotResult, _ := mql(tt.args.expression, tt.args.env)
+			// t.Logf("result: %v", gotResult)
 			gotResult, err := mql(tt.args.expression, tt.args.env)
 			if err != nil && err != tt.wantErr {
 				t.Errorf("mql() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			fmt.Printf("SMF Config: %v", smfConfig)
+			// fmt.Printf("SMF Config: %v", smfConfig)
 
 			var value []byte
 			value, err = jsonutil.EncodePretty(gotResult)
@@ -835,6 +854,8 @@ func Test_mql(t *testing.T) {
 				fmt.Printf("unable to decode the json string: %v\n", err)
 			}
 			dump.V(string(value))
+
+			// fmt.Printf("gotResult: %#v\n\n", arrutil.AnyToString(arrutil.SliceToStrings(gotResult.([]interface{}))))
 
 			fmt.Printf("mql() output type(%T)= value(%#v), want %v, err = %v\n", gotResult, gotResult, tt.wantResult, err)
 			if !reflect.DeepEqual(gotResult, tt.wantResult) {
@@ -844,9 +865,9 @@ func Test_mql(t *testing.T) {
 	}
 }
 
-func whereString(smfConfig *models.SMFConfig) string {
-	if where, ok := smfConfig.Query.Where.(string); ok {
-		return where
-	}
-	return ""
-}
+// func whereString(smfConfig *models.SMFConfig) string {
+// 	if where, ok := smfConfig.Query.Where.(string); ok {
+// 		return where
+// 	}
+// 	return ""
+// }
