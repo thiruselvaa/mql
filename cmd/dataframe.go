@@ -115,7 +115,12 @@ func main() {
 	afterDateComparatorFunc := func(colVal *string) bool {
 		var exprSb strings.Builder
 		exprSb.WriteString(msgVal)
+		// exprSb.WriteString("=") //this won't work
+		// exprSb.WriteString("==")
+		// exprSb.WriteString(">=")
 		exprSb.WriteString(">")
+		// exprSb.WriteString("<=")
+		// exprSb.WriteString("<")
 		exprSb.WriteString(*colVal)
 
 		expression, err := govaluate.NewEvaluableExpression(exprSb.String())
@@ -180,6 +185,7 @@ func main() {
 		csvDF.ColumnNames()[3]: "*",
 
 		// csvDF.ColumnNames()[4]: "2019-12-31",
+		// csvDF.ColumnNames()[4]: "2020-12-31",
 		csvDF.ColumnNames()[4]: "2021-12-31",
 	}
 	fmt.Println("searchValuesMap:")
