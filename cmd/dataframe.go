@@ -171,49 +171,194 @@ func main() {
 	)
 	fmt.Println(sortedCsvDF)
 
-	afterDateComparatorFunc := func(colVal, msgVal *string) *bool {
-		var (
-			exprSb     strings.Builder
-			boolResult bool
-		)
+	afterDate := false
+	sortedCsvDF = sortedCsvDF.Apply(
+		qframe.Instruction{
+			Fn:     afterDate,
+			DstCol: "after_date",
+		},
+	)
+	fmt.Println(sortedCsvDF)
 
-		exprSb.WriteString(*msgVal)
+	// afterDateComparatorFunc := func(colVal, msgVal *string) *bool {
+	// 	var (
+	// 		exprSb     strings.Builder
+	// 		boolResult bool
+	// 	)
+
+	// 	// msgVal := "2021-12-31"
+	// 	// exprSb.WriteString(msgVal)
+	// 	exprSb.WriteString(*msgVal)
+	// 	exprSb.WriteString(">")
+	// 	exprSb.WriteString(*colVal)
+
+	// 	expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+	// 	if err != nil {
+	// 		return &boolResult
+	// 	}
+	// 	result, err := expression.Evaluate(nil)
+	// 	if err != nil {
+	// 		return &boolResult
+	// 	}
+
+	// 	fmt.Printf("afterDateComparatorFunc: result type=%T, value=%v\n", result, result)
+	// 	switch bresult := result.(type) {
+	// 	case bool:
+	// 		return &bresult
+	// 	}
+	// 	return &boolResult
+	// 	// return &msgVal
+	// 	// return msgVal
+
+	// 	// switch result.(type) {
+	// 	// case bool:
+	// 	// 	*msgVal = strutil.MustString(result)
+	// 	// 	return msgVal
+	// 	// }
+	// 	// return msgVal
+	// }
+
+	// sortedCsvDF = sortedCsvDF.Apply(
+	// 	qframe.Instruction{
+	// 		Fn:      afterDateComparatorFunc,
+	// 		DstCol:  "after_date",
+	// 		SrcCol1: "effectiveDate",
+	// 		// SrcCol2: "effectiveDateFromMsg",
+	// 		SrcCol2: "effectiveDateFromMsg",
+	// 	},
+	// )
+	// fmt.Println(sortedCsvDF)
+
+	//
+	// afterDateComparatorFunc := func(colVal, msgVal *string) *string {
+	// 	var (
+	// 		exprSb strings.Builder
+	// 		// boolResult bool
+	// 	)
+
+	// 	// msgVal := "2021-12-31"
+	// 	// exprSb.WriteString(msgVal)
+	// 	exprSb.WriteString(*msgVal)
+	// 	exprSb.WriteString(">")
+	// 	exprSb.WriteString(*colVal)
+
+	// 	expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+	// 	if err != nil {
+	// 		// return &msgVal
+	// 		return msgVal
+	// 	}
+	// 	result, err := expression.Evaluate(nil)
+	// 	if err != nil {
+	// 		// return &msgVal
+	// 		return msgVal
+	// 	}
+
+	// 	fmt.Printf("afterDateComparatorFunc: result type=%T, value=%v\n", result, result)
+	// 	// switch bresult := result.(type) {
+	// 	// case bool:
+	// 	// 	return bresult
+	// 	// }
+	// 	// return boolResult
+	// 	// return &msgVal
+	// 	// return msgVal
+
+	// 	switch result.(type) {
+	// 	case bool:
+	// 		*msgVal = strutil.MustString(result)
+	// 		return msgVal
+	// 	}
+	// 	return msgVal
+	// }
+
+	// sortedCsvDF = sortedCsvDF.Apply(
+	// 	qframe.Instruction{
+	// 		Fn:      afterDateComparatorFunc,
+	// 		DstCol:  "after_date",
+	// 		SrcCol1: "effectiveDate",
+	// 		// SrcCol2: "effectiveDateFromMsg",
+	// 		SrcCol2: "effectiveDateFromMsg",
+	// 	},
+	// )
+	// fmt.Println(sortedCsvDF)
+	//
+
+	// dump.V(sortedCsvDF.ColumnTypes())
+	// dump.V(sortedCsvDF.ColumnTypeMap())
+
+	input := qframe.New(map[string]interface{}{
+		"COL1": []string{"2020-12-31", "2020-12-31", "2020-12-31"},
+		"COL2": []string{"2021-12-31", "2021-12-31", "2021-12-31"},
+	})
+	fmt.Println(input)
+
+	// output := input.Apply(qframe.Instruction{Fn: func(x *string) *string { return &msgVal }, DstCol: "IS_LONG", SrcCol1: "COL1"})
+	// output := input.Apply(qframe.Instruction{Fn: func(x, y *string) bool { return len(*x) >= len(*y) }, DstCol: "IS_LONG", SrcCol1: "COL1", SrcCol2: "COL2"})
+	// output := input.Apply(qframe.Instruction{Fn: func(x *string) bool { return x == &msgVal }, DstCol: "IS_EQUAL", SrcCol1: "COL1"})
+	// output := input.Apply(qframe.Instruction{Fn: func(x *string) bool { return len(*x) > 2 }, DstCol: "IS_LONG", SrcCol1: "COL1"})
+	// output := input.Apply(
+	// 	qframe.Instruction{
+	// 		Fn: func(colVal *string) bool {
+	// 			var exprSb strings.Builder
+	// 			exprSb.WriteString(msgVal)
+	// 			exprSb.WriteString(">")
+	// 			exprSb.WriteString(*colVal)
+
+	// 			expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+	// 			if err != nil {
+	// 				return false
+	// 			}
+	// 			result, err := expression.Evaluate(nil)
+	// 			if err != nil {
+	// 				return false
+	// 			}
+
+	// 			fmt.Printf("afterDateComparatorFunc: result type=%T, value=%v\n", result, result)
+	// 			switch bresult := result.(type) {
+	// 			case bool:
+	// 				return bresult
+	// 			}
+	// 			return false
+	// 			// return colVal == &msgVal
+	// 		},
+	// 		DstCol:  "IS_EQUAL",
+	// 		SrcCol1: "COL1",
+	// 	},
+	// )
+	// fmt.Println(output)
+
+	afterDateComparatorFunc := func(colVal *string) bool {
+		var exprSb strings.Builder
+		exprSb.WriteString(msgVal)
 		exprSb.WriteString(">")
 		exprSb.WriteString(*colVal)
 
 		expression, err := govaluate.NewEvaluableExpression(exprSb.String())
 		if err != nil {
-			return &boolResult
+			return false
 		}
 		result, err := expression.Evaluate(nil)
 		if err != nil {
-			return &boolResult
+			return false
 		}
 
-		fmt.Printf("afterDateComparatorFunc: result=%v\n", result)
+		fmt.Printf("afterDateComparatorFunc: result type=%T, value=%v\n", result, result)
 		switch bresult := result.(type) {
 		case bool:
-			return &bresult
+			return bresult
 		}
-		return &boolResult
+		return false
+		// return colVal == &msgVal
 	}
-	sortedCsvDF = sortedCsvDF.Apply(
+
+	output := sortedCsvDF.Apply(
 		qframe.Instruction{
 			Fn:      afterDateComparatorFunc,
 			DstCol:  "after_date",
 			SrcCol1: "effectiveDate",
-			SrcCol2: "effectiveDateFromMsg",
+			// SrcCol1: "COL1",
 		},
 	)
-	fmt.Println(sortedCsvDF)
-
-	// input := qframe.New(map[string]interface{}{
-	// 	"COL1": []string{"a", "aa", "aaa"},
-	// })
-
-	// // output := input.Apply(qframe.Instruction{Fn: func(x *string) bool { return len(*x) > 2 }, DstCol: "IS_LONG", SrcCol1: "COL1"})
-	// output := input.Apply(qframe.Instruction{Fn: func(x *string) *string { return &msgVal }, DstCol: "IS_LONG", SrcCol1: "COL1"})
-	// fmt.Println(output)
+	fmt.Println(output)
 
 	// filterOperatorMap := map[string]string{
 	// 	csvDF.ColumnNames()[0]: "=",
