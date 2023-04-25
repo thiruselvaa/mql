@@ -10,7 +10,6 @@ import (
 	"github.com/gookit/goutil/dump"
 	"github.com/tobgu/qframe"
 	"github.com/tobgu/qframe/config/csv"
-	"github.com/tobgu/qframe/filter"
 	"github.com/tobgu/qframe/types"
 )
 
@@ -110,90 +109,237 @@ func main() {
 	sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
 	fmt.Println(sortedCsvDF)
 
-	filterOperatorMap := map[string]string{
-		csvDF.ColumnNames()[0]: "=",
-		csvDF.ColumnNames()[1]: "=",
-		csvDF.ColumnNames()[2]: "=",
-		csvDF.ColumnNames()[3]: "=",
-		csvDF.ColumnNames()[4]: "after_date",
-	}
+	// msgVals := []string{
+	// 	"2021-12-31",
+	// 	// "2021-12-31",
+	// 	// "2021-12-31",
+	// 	// "2021-12-31",
+	// 	// "2021-12-31",
+	// 	// "2021-12-31",
+	// }
+	// msgFieldValue := map[string]interface{}{
+	// 	"effectiveDateFromMsg": msgVals,
+	// }
+	// msgDF := qframe.New(msgFieldValue)
+	// fmt.Println(msgDF)
 
-	searchValuesMap := map[string]string{
-		// "hContractId": "H0251",
-		// "  hContractId  ": "H0251",
-		// "hContractId  ": "H0251",
-		csvDF.ColumnNames()[0]: "H0251",
+	// // sortedCsvDFWithmsgDF := sortedCsvDF.Append(msgDF)
+	// // fmt.Println(sortedCsvDFWithmsgDF)
 
-		csvDF.ColumnNames()[1]: "002",
-		// csvDF.ColumnNames()[1]: "003",
+	// sortedCsvDFWithmsgDF := sortedCsvDF.Copy("effectiveDateFromMsg", "effectiveDate")
+	// fmt.Println(sortedCsvDFWithmsgDF)
 
-		// csvDF.ColumnNames()[2]: "",
-		csvDF.ColumnNames()[2]: "null",
+	// afterDate := func(colVal, msgVal *string) bool {
+	// 	*msgVal = "2021-12-31"
 
-		// csvDF.ColumnNames()[3]: "",
-		csvDF.ColumnNames()[3]: "*",
+	// 	var exprSb strings.Builder
+	// 	exprSb.WriteString(*msgVal)
+	// 	exprSb.WriteString(">")
+	// 	exprSb.WriteString(*colVal)
 
-		csvDF.ColumnNames()[4]: "2021-12-31",
-	}
+	// 	// expression, err := govaluate.NewEvaluableExpression("'2014-01-02' > '2014-01-01 23:59:59'")
 
-	dump.V(searchValuesMap)
+	// 	expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+	// 	if err != nil {
+	// 		return false
+	// 	}
+	// 	result, err := expression.Evaluate(nil)
+	// 	if err != nil {
+	// 		return false
+	// 	}
 
-	eq := func(column string, arg interface{}) qframe.FilterClause {
-		return qframe.Filter{Column: column, Comparator: filter.Eq, Arg: arg}
-	}
-	// func(f float64) bool { return f > 1.2 }
+	// 	fmt.Printf("afterDateComparatorFunc: result=%v\n", result)
+	// 	return result.(bool)
+	// }
 
-	afterDateComparatorFunc := func(colVal, msgVal string) bool {
-		var exprSb strings.Builder
-		exprSb.WriteString(msgVal)
+	msgVal := "2021-12-31"
+	// sortedCsvDF = sortedCsvDF.Apply(
+	// 	qframe.Instruction{
+	// 		Fn: func(m *string) *string { return &msgVal },
+	// 		// DstCol:  "after_date",
+	// 		DstCol:  "effectiveDateFromMsg",
+	// 		SrcCol1: "effectiveDate"},
+	// )
+	// fmt.Println(sortedCsvDF)
+
+	// msgVal = "nil"
+	sortedCsvDF = sortedCsvDF.Apply(
+		qframe.Instruction{
+			Fn:     &msgVal,
+			DstCol: "effectiveDateFromMsg",
+		},
+	)
+	fmt.Println(sortedCsvDF)
+
+	afterDateComparatorFunc := func(colVal, msgVal *string) *bool {
+		var (
+			exprSb     strings.Builder
+			boolResult bool
+		)
+
+		exprSb.WriteString(*msgVal)
 		exprSb.WriteString(">")
-		exprSb.WriteString(colVal)
-
-		// expression, err := govaluate.NewEvaluableExpression("'2014-01-02' > '2014-01-01 23:59:59'")
+		exprSb.WriteString(*colVal)
 
 		expression, err := govaluate.NewEvaluableExpression(exprSb.String())
 		if err != nil {
-			return false
+			return &boolResult
 		}
 		result, err := expression.Evaluate(nil)
 		if err != nil {
-			return false
+			return &boolResult
 		}
 
 		fmt.Printf("afterDateComparatorFunc: result=%v\n", result)
-		return result.(bool)
-	}
-
-	after_date := func(column string, arg interface{}) qframe.FilterClause {
-		return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: arg}
-	}
-
-	filterClauses := make([]qframe.FilterClause, len(colNames))
-	for idx, cName := range colNames {
-		switch filterOperatorMap[cName] {
-		case filter.Eq:
-			filterClauses[idx] = eq(cName, searchValuesMap[cName])
-		case "after_date":
-			filterClauses[idx] = after_date(cName, searchValuesMap[cName])
+		switch bresult := result.(type) {
+		case bool:
+			return &bresult
 		}
-
-		// filterClauses[idx] = qframe.Filter{
-		// 	Column:     cName,
-		// 	Comparator: filterOperatorMap[cName],
-		// 	Arg:        searchValuesMap[cName],
-		// }
+		return &boolResult
 	}
-	// fmt.Printf("filterClauses: %#v\n", filterClauses)
-	dump.V(filterClauses)
-
-	filteredCsvDF := sortedCsvDF.Filter(
-		qframe.And(
-			// filterClauses[0:3]...,
-			filterClauses...,
-		),
+	sortedCsvDF = sortedCsvDF.Apply(
+		qframe.Instruction{
+			Fn:      afterDateComparatorFunc,
+			DstCol:  "after_date",
+			SrcCol1: "effectiveDate",
+			SrcCol2: "effectiveDateFromMsg",
+		},
 	)
+	fmt.Println(sortedCsvDF)
 
-	fmt.Println(filteredCsvDF)
+	// input := qframe.New(map[string]interface{}{
+	// 	"COL1": []string{"a", "aa", "aaa"},
+	// })
+
+	// // output := input.Apply(qframe.Instruction{Fn: func(x *string) bool { return len(*x) > 2 }, DstCol: "IS_LONG", SrcCol1: "COL1"})
+	// output := input.Apply(qframe.Instruction{Fn: func(x *string) *string { return &msgVal }, DstCol: "IS_LONG", SrcCol1: "COL1"})
+	// fmt.Println(output)
+
+	// filterOperatorMap := map[string]string{
+	// 	csvDF.ColumnNames()[0]: "=",
+	// 	csvDF.ColumnNames()[1]: "=",
+	// 	csvDF.ColumnNames()[2]: "=",
+	// 	csvDF.ColumnNames()[3]: "=",
+	// 	csvDF.ColumnNames()[4]: "after_date",
+	// }
+
+	// searchValuesMap := map[string]string{
+	// 	// "hContractId": "H0251",
+	// 	// "  hContractId  ": "H0251",
+	// 	// "hContractId  ": "H0251",
+	// 	csvDF.ColumnNames()[0]: "H0251",
+
+	// 	csvDF.ColumnNames()[1]: "002",
+	// 	// csvDF.ColumnNames()[1]: "003",
+
+	// 	// csvDF.ColumnNames()[2]: "",
+	// 	csvDF.ColumnNames()[2]: "null",
+
+	// 	// csvDF.ColumnNames()[3]: "",
+	// 	csvDF.ColumnNames()[3]: "*",
+
+	// 	csvDF.ColumnNames()[4]: "2021-12-31",
+	// }
+
+	// dump.V(searchValuesMap)
+
+	// eq := func(column string, arg interface{}) qframe.FilterClause {
+	// 	return qframe.Filter{Column: column, Comparator: filter.Eq, Arg: arg}
+	// }
+	// // func(f float64) bool { return f > 1.2 }
+
+	// // afterDateComparatorFunc := func(colVal, msgVal string) bool {
+	// // 	var exprSb strings.Builder
+	// // 	exprSb.WriteString(msgVal)
+	// // 	exprSb.WriteString(">")
+	// // 	exprSb.WriteString(colVal)
+
+	// // 	// expression, err := govaluate.NewEvaluableExpression("'2014-01-02' > '2014-01-01 23:59:59'")
+
+	// // 	expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+	// // 	if err != nil {
+	// // 		return false
+	// // 	}
+	// // 	result, err := expression.Evaluate(nil)
+	// // 	if err != nil {
+	// // 		return false
+	// // 	}
+
+	// // 	fmt.Printf("afterDateComparatorFunc: result=%v\n", result)
+	// // 	return result.(bool)
+	// // }
+
+	// // fmt.Printf("afterDateComparatorFunc: %v\n", afterDateComparatorFunc("2020-12-31", "2021-12-31"))
+
+	// // after_date := func(column string, arg interface{}) qframe.FilterClause {
+	// // 	return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: arg}
+	// // }
+
+	// afterDateComparatorFunc := func(colVal, msgVal *string) bool {
+	// 	var exprSb strings.Builder
+	// 	exprSb.WriteString(*msgVal)
+	// 	exprSb.WriteString(">")
+	// 	exprSb.WriteString(*colVal)
+
+	// 	// expression, err := govaluate.NewEvaluableExpression("'2014-01-02' > '2014-01-01 23:59:59'")
+
+	// 	expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+	// 	if err != nil {
+	// 		return false
+	// 	}
+	// 	result, err := expression.Evaluate(nil)
+	// 	if err != nil {
+	// 		return false
+	// 	}
+
+	// 	fmt.Printf("afterDateComparatorFunc: result=%v\n", result)
+	// 	return result.(bool)
+	// }
+
+	// colVal := "2020-12-31"
+	// msgVal := "2021-12-31"
+	// fmt.Printf("afterDateComparatorFunc: %v\n", afterDateComparatorFunc(&colVal, &msgVal))
+
+	// after_date := func(column, arg string) qframe.FilterClause {
+	// 	// return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: map[string]interface{}{"tmp": []string{arg}}}
+	// 	return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: types.ColumnName(arg)}
+	// 	// return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: arg}
+	// }
+
+	// // func col(c string) types.ColumnName {
+	// // 	return types.ColumnName(c)
+	// // }
+
+	// // csvDF.FilteredApply()
+
+	// filterClauses := make([]qframe.FilterClause, len(colNames))
+	// for idx, cName := range colNames {
+	// 	switch filterOperatorMap[cName] {
+	// 	case filter.Eq:
+	// 		filterClauses[idx] = eq(cName, searchValuesMap[cName])
+	// 	case "after_date":
+	// 		filterClauses[idx] = after_date(cName, searchValuesMap[cName])
+	// 	}
+
+	// 	// filterClauses[idx] = qframe.Filter{
+	// 	// 	Column:     cName,
+	// 	// 	Comparator: filterOperatorMap[cName],
+	// 	// 	Arg:        searchValuesMap[cName],
+	// 	// }
+	// }
+	// // fmt.Printf("filterClauses: %#v\n", filterClauses)
+	// dump.V(filterClauses)
+
+	// filteredCsvDF := sortedCsvDF.Filter(
+	// 	qframe.And(
+	// 		// filterClauses[0:3]...,
+	// 		filterClauses...,
+	// 	),
+	// )
+
+	// filteredCsvDF.Apply()
+
+	// fmt.Println(filteredCsvDF)
 }
 
 /*
