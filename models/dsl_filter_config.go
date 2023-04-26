@@ -4,12 +4,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Knetic/govaluate"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
 	"github.com/thoas/go-funk"
+	"github.com/tobgu/qframe"
+	"github.com/tobgu/qframe/config/csv"
+	"github.com/tobgu/qframe/filter"
+	"github.com/tobgu/qframe/types"
 )
 
 type DSLFilterConfig struct {
@@ -20,9 +25,173 @@ type BooleanExpression struct {
 	FieldPath string `mapstructure:"field_path"`
 	Operator  string `mapstructure:"operator"`
 	Value     any    `mapstructure:"value"`
+	// Value     *any   `mapstructure:"value"`
 }
 
 func (e BooleanExpression) String() string {
+
+	if (!funk.IsEmpty(e.FieldPath) && strings.Contains(e.FieldPath, ",")) &&
+		(!funk.IsEmpty(e.Operator) && strings.Contains(e.Operator, ",")) &&
+		(!funk.IsEmpty(e.Value)) {
+
+		res := "found group expression"
+		groupedFieldNames := strings.Split(e.FieldPath, ",")
+		groupedOperators := strings.Split(e.Operator, ",")
+		// groupedOperators :=  strings.TrimSpace(strings.Split(e.Operator, ","))
+		groupedFieldValues := make([]string, e.valueLength())
+
+		switch val := e.Value.(type) {
+		case string:
+			groupedFieldValues[0] = val
+		case []interface{}:
+			switch val[0].(type) {
+			case string:
+				for i, v := range val {
+					groupedFieldValues[i] = v.(string)
+				}
+			default:
+				return fmt.Sprintf("unsupported data-type(%T) in '[]interface{}' value field for group expression", val[0])
+			}
+		default:
+			return fmt.Sprintf("unsupported data-type(%T) in value field for group expression", val)
+		}
+
+		dump.V(groupedFieldNames)
+		dump.V(groupedOperators)
+		// dump.V(groupedFieldValues)
+
+		csvData := make([]string, len(groupedFieldValues)+1)
+		for i := 0; i < len(csvData); i++ {
+			if i == 0 {
+				csvData[i] = e.FieldPath
+				// csvData[i] = groupedFieldNames
+			} else {
+				csvData[i] = groupedFieldValues[i-1]
+			}
+		}
+
+		dump.V(csvData)
+
+		// colNames := strings.Split(fieldNames, ",")
+		colTypes := make(map[string]string, len(groupedFieldNames))
+		for _, colName := range groupedFieldNames {
+			colTypes[colName] = types.String
+		}
+		dump.V(colTypes)
+
+		csvReader := strings.NewReader(strings.Join(csvData, "\n"))
+		csvDF := qframe.ReadCSV(csvReader, csv.Types(colTypes))
+		fmt.Println(csvDF)
+
+		// fmt.Println(
+		// 	csvDF.Sort(
+		// 		qframe.Order{
+		// 			Column: csvDF.ColumnNames()[0],
+		// 			// Reverse:  true,
+		// 			// NullLast: true,
+		// 		},
+		// 	),
+		// )
+
+		columnOrder := make([]qframe.Order, len(groupedFieldNames))
+		// columnOrder := make([]qframe.Order, csvDF.Len())
+		for idx, cName := range groupedFieldNames {
+			columnOrder[idx] = qframe.Order{Column: cName}
+		}
+		// fmt.Printf("columnOrder: %#v\n", columnOrder)
+		dump.V(columnOrder)
+
+		sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
+		fmt.Println(sortedCsvDF)
+
+		var msgVal string
+		afterDateComparatorFunc := func(colVal *string) bool {
+			var exprSb strings.Builder
+			exprSb.WriteString(msgVal)
+			// exprSb.WriteString("=") //this won't work
+			// exprSb.WriteString("==")
+			// exprSb.WriteString(">=")
+			exprSb.WriteString(">")
+			// exprSb.WriteString("<=")
+			// exprSb.WriteString("<")
+			exprSb.WriteString(*colVal)
+
+			expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+			if err != nil {
+				return false
+			}
+			result, err := expression.Evaluate(nil)
+			if err != nil {
+				return false
+			}
+
+			fmt.Printf("afterDateComparatorFunc: result type=%T, value=%v\n", result, result)
+			switch bresult := result.(type) {
+			case bool:
+				return bresult
+			}
+			return false
+		}
+		fmt.Printf("afterDateComparatorFunc: type is %T\n\n", afterDateComparatorFunc)
+
+		eq := func(column string, arg interface{}) qframe.FilterClause {
+			return qframe.Filter{Column: column, Comparator: filter.Eq, Arg: arg}
+		}
+		fmt.Printf("eq Func: type is %T\n\n", eq)
+
+		after_date := func(column string, arg interface{}) qframe.FilterClause {
+			dump.V(arg)
+			msgVal = arg.(string)
+			return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: arg}
+		}
+		fmt.Printf("after_date Func: type is %T\n\n", after_date)
+
+		filterOperatorMap := map[string]string{
+			csvDF.ColumnNames()[0]: "=",
+			csvDF.ColumnNames()[1]: "=",
+			csvDF.ColumnNames()[2]: "=",
+			csvDF.ColumnNames()[3]: "=",
+			csvDF.ColumnNames()[4]: "after_date",
+		}
+		// fmt.Printf("filterOperatorMap: %v\n\n", filterOperatorMap)
+		fmt.Println("filterOperatorMap:")
+		dump.V(filterOperatorMap)
+
+		searchValuesMap := map[string]string{
+			csvDF.ColumnNames()[0]: "H2001",
+			csvDF.ColumnNames()[1]: "018",
+			csvDF.ColumnNames()[2]: "null",
+			csvDF.ColumnNames()[3]: "*",
+			csvDF.ColumnNames()[4]: "2021-12-31",
+		}
+		// fmt.Printf("searchValuesMap: %v\n\n", searchValuesMap)
+		fmt.Println("searchValuesMap:")
+		dump.V(searchValuesMap)
+
+		filterClauses := make([]qframe.FilterClause, len(groupedFieldNames))
+		for idx, cName := range groupedFieldNames {
+			switch filterOperatorMap[cName] {
+			case filter.Eq:
+				filterClauses[idx] = eq(cName, searchValuesMap[cName])
+			case "after_date":
+				filterClauses[idx] = after_date(cName, searchValuesMap[cName])
+			}
+		}
+		// fmt.Printf("filterClauses: %#v\n", filterClauses)
+		dump.V(filterClauses)
+
+		filteredCsvDF := sortedCsvDF.Filter(
+			qframe.And(
+				// filterClauses[0:3]...,
+				filterClauses...,
+			),
+		)
+		fmt.Println(filteredCsvDF)
+
+		result := filteredCsvDF.Len() > 0
+		fmt.Printf("filter condition group expression result: %v\n\n", result)
+		return res
+	}
 
 	switch val := e.Value.(type) {
 	case string:
@@ -51,22 +220,16 @@ func (e BooleanExpression) String() string {
 	default:
 		return "error"
 	}
+}
 
-	// return fmt.Sprintf("(%v %v %#v)", e.FieldPath, e.Operator, e.Value)
-
-	// tmp := "[1, 2, 3]"
-	// tmp := "[1.23, 2.45]"
-	// tmp := "['H2226', 'H2226']"
-	// tmp := `['H2226', 'H2226']`
-	// tmp := `["H2226", "H2226"]`
-	// return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, tmp)
-
-	// return fmt.Sprintf("(%v %v %#v)", e.FieldPath, e.Operator, `["H2226", "H2226"]`)
-	// return fmt.Sprintf("(%v %v %#v)", e.FieldPath, e.Operator, arrutil.AnyToStrings(e.Value))
-
-	// var sb strings.Builder
-	// fmt.Fprintf(&sb, "(%v %v float(%v))", e.FieldPath, e.Operator, e.Value)
-	// return sb.String()
+func (e BooleanExpression) valueLength() int {
+	switch val := e.Value.(type) {
+	case string:
+		return 1
+	case []interface{}:
+		return len(val)
+	}
+	return 0
 }
 
 // SliceToString convert []any to string

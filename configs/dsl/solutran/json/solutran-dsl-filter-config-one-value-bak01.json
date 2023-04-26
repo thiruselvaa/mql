@@ -1,0 +1,24 @@
+{
+  "filter": {
+    "name": "solutran",
+    "type": "dsl",
+    "condition": {
+      "function": [
+        {
+          "any": {
+            "field_path": "message.memberships.array[:]",
+            "condition": {
+              "expression": [
+                {
+                  "field_path": "#.hContractId.string,#.packageBenefitPlanCode.string,#.segmentId.string,#.groupNumber.string,#.effectiveDate.string",
+                  "operator": "eq, eq, eq, eq, after_date",
+                  "value": "H0169,001,null,*,2020-12-31"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

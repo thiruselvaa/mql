@@ -16,18 +16,6 @@ type Env struct {
 }
 
 func main() {
-	expression := `any(Tweets, {.Len in [0, 1, 2, 3]})`
-	env := Env{
-		Tweets: []Tweet{{1}, {10}, {11}},
-	}
-
-	result, err := mql(expression, env)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("result: %v\n", result)
-
 	// // configFile := "configs/native-filter-query.json"
 	// configFile := "configs/native-filter-query.yaml"
 	// models.NewSMFConfig(configFile)
@@ -41,11 +29,14 @@ func main() {
 	// dslConfigFile := "configs/dsl-filter-config.json"
 	dslConfigFile := "configs/dsl/solutran/json/solutran-dsl-filter-config.json"
 	// dslConfig, err := models.NewDSLFilterConfig(dslConfigFile)
-	_, err = models.NewDSLFilterConfig(dslConfigFile)
+	_, err := models.NewDSLFilterConfig(dslConfigFile)
 	if err != nil {
 		fmt.Printf("error parsing smf config file: %v", err)
 		return
 	}
+	// fmt.Println(dslConfig)
+	// dump.V((*dslConfig.Filter.Condition.Function)[0].Any.Condition.Expression)
+
 	// var value []byte
 	// value, err = jsonutil.EncodePretty(dslConfig)
 	// // value, err = jsonutil.Encode(dslConfig)
