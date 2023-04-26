@@ -159,22 +159,31 @@ func (e BooleanExpression) String() string {
 
 		searchValuesMap := map[string]string{
 			csvDF.ColumnNames()[0]: "H2001",
-			csvDF.ColumnNames()[1]: "018",
+			csvDF.ColumnNames()[1]: "868",
 			csvDF.ColumnNames()[2]: "null",
-			csvDF.ColumnNames()[3]: "*",
-			csvDF.ColumnNames()[4]: "2021-12-31",
+			csvDF.ColumnNames()[3]: "97004",
+			csvDF.ColumnNames()[4]: "2023-01-01",
+			// csvDF.ColumnNames()[3]: "*",
+			// csvDF.ColumnNames()[4]: "2021-12-31",
 		}
 		// fmt.Printf("searchValuesMap: %v\n\n", searchValuesMap)
 		fmt.Println("searchValuesMap:")
 		dump.V(searchValuesMap)
 
-		filterClauses := make([]qframe.FilterClause, len(groupedFieldNames))
-		for idx, cName := range groupedFieldNames {
-			switch filterOperatorMap[cName] {
-			case filter.Eq:
-				filterClauses[idx] = eq(cName, searchValuesMap[cName])
+		fmt.Printf("groupedOperators: %#v\n", groupedOperators)
+		filterClauses := make([]qframe.FilterClause, len(groupedOperators))
+		for i := 0; i < len(groupedOperators); i++ {
+			fmt.Printf("groupedOperators[%v]: %#v\n", i, groupedOperators[i])
+
+			cName := groupedFieldNames[i]
+
+			// switch groupedOperators[i] {
+			switch strings.TrimSpace(groupedOperators[i]) {
+			// case filter.Eq:
+			case "eq":
+				filterClauses[i] = eq(cName, searchValuesMap[cName])
 			case "after_date":
-				filterClauses[idx] = after_date(cName, searchValuesMap[cName])
+				filterClauses[i] = after_date(cName, searchValuesMap[cName])
 			}
 		}
 		// fmt.Printf("filterClauses: %#v\n", filterClauses)

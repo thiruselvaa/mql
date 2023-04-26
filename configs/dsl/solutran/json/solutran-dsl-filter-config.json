@@ -11,7 +11,7 @@
               "expression": [
                 {
                   "field_path": "#.hContractId.string,#.packageBenefitPlanCode.string,#.segmentId.string,#.groupNumber.string,#.effectiveDate.string",
-                  "operator": "eq, eq, eq, eq, after_date",
+                  "operator": "eq, eq, eq",
                   "value": [
                     "H0169,001,null,*,2020-12-31",
                     "H0169,002,null,*,2020-12-31",
