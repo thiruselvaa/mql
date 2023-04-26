@@ -56,9 +56,19 @@ func (e BooleanExpression) String() string {
 			return fmt.Sprintf("unsupported data-type(%T) in value field for group expression", val)
 		}
 
+		fmt.Println("\ngroupedFieldNames:")
 		dump.V(groupedFieldNames)
+
+		fmt.Println("\ngroupedOperators:")
 		dump.V(groupedOperators)
 		// dump.V(groupedFieldValues)
+
+		// groupedFieldValueElements := strings.Split(groupedFieldValues[0], ",")
+		// if !(len(groupedFieldNames) == len(groupedOperators) &&
+		// 	len(groupedFieldNames) == len(groupedFieldValueElements)) {
+		// 	res := "should have same number of field(len=%v), operator(len=%v) and value(len=%v) in group expression"
+		// 	return fmt.Sprintf(res, len(groupedFieldNames), len(groupedOperators), len(groupedFieldValueElements))
+		// }
 
 		csvData := make([]string, len(groupedFieldValues)+1)
 		for i := 0; i < len(csvData); i++ {
@@ -70,6 +80,7 @@ func (e BooleanExpression) String() string {
 			}
 		}
 
+		fmt.Println("\ncsvData:")
 		dump.V(csvData)
 
 		// colNames := strings.Split(fieldNames, ",")
@@ -77,10 +88,13 @@ func (e BooleanExpression) String() string {
 		for _, colName := range groupedFieldNames {
 			colTypes[colName] = types.String
 		}
+		fmt.Println("\ncolTypes:")
 		dump.V(colTypes)
 
 		csvReader := strings.NewReader(strings.Join(csvData, "\n"))
 		csvDF := qframe.ReadCSV(csvReader, csv.Types(colTypes))
+
+		fmt.Println("\ncsvDF:")
 		fmt.Println(csvDF)
 
 		// fmt.Println(
@@ -99,9 +113,11 @@ func (e BooleanExpression) String() string {
 			columnOrder[idx] = qframe.Order{Column: cName}
 		}
 		// fmt.Printf("columnOrder: %#v\n", columnOrder)
+		fmt.Println("\ncolumnOrder:")
 		dump.V(columnOrder)
 
 		sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
+		fmt.Println("\nsortedCsvDF:")
 		fmt.Println(sortedCsvDF)
 
 		var msgVal string
@@ -125,38 +141,28 @@ func (e BooleanExpression) String() string {
 				return false
 			}
 
-			fmt.Printf("afterDateComparatorFunc: result type=%T, value=%v\n", result, result)
+			fmt.Printf("\nafterDateComparatorFunc: result type=%T, value=%v\n", result, result)
 			switch bresult := result.(type) {
 			case bool:
 				return bresult
 			}
 			return false
 		}
-		fmt.Printf("afterDateComparatorFunc: type is %T\n\n", afterDateComparatorFunc)
+		fmt.Printf("\nafterDateComparatorFunc: type is %T\n\n", afterDateComparatorFunc)
 
 		eq := func(column string, arg interface{}) qframe.FilterClause {
 			return qframe.Filter{Column: column, Comparator: filter.Eq, Arg: arg}
 		}
-		fmt.Printf("eq Func: type is %T\n\n", eq)
+		fmt.Printf("\neq Func: type is %T\n\n", eq)
 
 		after_date := func(column string, arg interface{}) qframe.FilterClause {
 			dump.V(arg)
 			msgVal = arg.(string)
 			return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: arg}
 		}
-		fmt.Printf("after_date Func: type is %T\n\n", after_date)
+		fmt.Printf("\nafter_date Func: type is %T\n\n", after_date)
 
-		filterOperatorMap := map[string]string{
-			csvDF.ColumnNames()[0]: "=",
-			csvDF.ColumnNames()[1]: "=",
-			csvDF.ColumnNames()[2]: "=",
-			csvDF.ColumnNames()[3]: "=",
-			csvDF.ColumnNames()[4]: "after_date",
-		}
-		// fmt.Printf("filterOperatorMap: %v\n\n", filterOperatorMap)
-		fmt.Println("filterOperatorMap:")
-		dump.V(filterOperatorMap)
-
+		// searchValuesMap := map[string]string{}
 		searchValuesMap := map[string]string{
 			csvDF.ColumnNames()[0]: "H2001",
 			csvDF.ColumnNames()[1]: "868",
@@ -167,16 +173,12 @@ func (e BooleanExpression) String() string {
 			// csvDF.ColumnNames()[4]: "2021-12-31",
 		}
 		// fmt.Printf("searchValuesMap: %v\n\n", searchValuesMap)
-		fmt.Println("searchValuesMap:")
+		fmt.Println("\nsearchValuesMap:")
 		dump.V(searchValuesMap)
 
-		fmt.Printf("groupedOperators: %#v\n", groupedOperators)
 		filterClauses := make([]qframe.FilterClause, len(groupedOperators))
 		for i := 0; i < len(groupedOperators); i++ {
-			fmt.Printf("groupedOperators[%v]: %#v\n", i, groupedOperators[i])
-
 			cName := groupedFieldNames[i]
-
 			// switch groupedOperators[i] {
 			switch strings.TrimSpace(groupedOperators[i]) {
 			// case filter.Eq:
@@ -187,6 +189,7 @@ func (e BooleanExpression) String() string {
 			}
 		}
 		// fmt.Printf("filterClauses: %#v\n", filterClauses)
+		fmt.Println("\nfilterClauses:")
 		dump.V(filterClauses)
 
 		filteredCsvDF := sortedCsvDF.Filter(
@@ -195,6 +198,7 @@ func (e BooleanExpression) String() string {
 				filterClauses...,
 			),
 		)
+		fmt.Println("\nfilteredCsvDF:")
 		fmt.Println(filteredCsvDF)
 
 		result := filteredCsvDF.Len() > 0

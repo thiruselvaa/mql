@@ -634,9 +634,64 @@ func Test_mql(t *testing.T) {
 				// `,
 				//
 
+				//
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array,
+				// 			{
+				// 				.hContractId.string startsWith "H2226" and
+				// 				.packageBenefitPlanCode.string startsWith "001" and
+				// 				.segmentId.string startsWith "null"
+				// 			}
+				// 		),
+				// 		{
+				// 			.hContractId.string + "," +
+				// 			.packageBenefitPlanCode.string + "," +
+				// 			.segmentId.string + "," +
+				// 			.effectiveDate.string
+				// 		}
+				// 	)
+				// `,
+				//
+				//
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array,
+				// 			{
+				// 				.hContractId.string startsWith "H2226" and
+				// 				.packageBenefitPlanCode.string startsWith "002" and
+				// 				.segmentId.string startsWith "001"
+				// 			}
+				// 		),
+				// 		{
+				// 			.hContractId.string + "," +
+				// 			.packageBenefitPlanCode.string + "," +
+				// 			.segmentId.string + "," +
+				// 			.effectiveDate.string
+				// 		}
+				// 	)
+				// `,
+				//
+				// expression: `
+				// 	any(message.memberships.array,
+				// 		{
+				// 			.hContractId.string startsWith "H2226" and
+				// 			.packageBenefitPlanCode.string startsWith "002" and
+				// 			.segmentId.string startsWith "001"
+				// 		}
+				// 	)
+				// `,
+				//
+
 				expression: `
 					map(
-						filter(message.memberships.array, len(.membershipGroupData.array) >= 0),
+						filter(message.memberships.array,
+							{
+								.hContractId.string startsWith "H2226" and
+								.packageBenefitPlanCode.string startsWith "002" and
+								.segmentId.string startsWith "001"
+							}
+						),
 						{
 							.hContractId.string + "," +
 							.packageBenefitPlanCode.string + "," +
@@ -645,6 +700,7 @@ func Test_mql(t *testing.T) {
 						}
 					)
 				`,
+
 				// expression: `map(message.memberships.array,  map(filter(.membershipGroupData.array, .groupNumber.string matches '.*'), .groupNumber.string))`,
 
 				// expression: `len(message.memberships.array) ?? null`,
