@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Knetic/govaluate"
+	"github.com/antonmedv/expr"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/yamlv3"
 	"github.com/gookit/goutil/arrutil"
@@ -16,6 +17,60 @@ import (
 	"github.com/tobgu/qframe/filter"
 	"github.com/tobgu/qframe/types"
 )
+
+var GroupExpression = expr.Function(
+	"groupExpression",
+	func(params ...any) (any, error) {
+		return compositeExpression(params...)
+		// return compositeExpression(
+		// 	arrutil.AnyToStrings(params[0]),
+		// 	arrutil.AnyToStrings(params[1]),
+		// 	arrutil.AnyToStrings(params[2]),
+		// )
+	},
+	new(func([]interface{}, []interface{}, []interface{}, []interface{}) bool),
+	// new(func([]string, []string, []string) bool),
+)
+
+var msgVal string
+var afterDateComparatorFunc = func(colVal *string) bool {
+	var exprSb strings.Builder
+	exprSb.WriteString(msgVal)
+	// exprSb.WriteString("=") //this won't work
+	// exprSb.WriteString("==")
+	// exprSb.WriteString(">=")
+	exprSb.WriteString(">")
+	// exprSb.WriteString("<=")
+	// exprSb.WriteString("<")
+	exprSb.WriteString(*colVal)
+
+	expression, err := govaluate.NewEvaluableExpression(exprSb.String())
+	if err != nil {
+		return false
+	}
+	result, err := expression.Evaluate(nil)
+	if err != nil {
+		return false
+	}
+
+	fmt.Printf("\nafterDateComparatorFunc: result type=%T, value=%v\n", result, result)
+	switch bresult := result.(type) {
+	case bool:
+		return bresult
+	}
+	return false
+}
+
+var eq = func(column string, arg interface{}) qframe.FilterClause {
+	return qframe.Filter{Column: column, Comparator: filter.Eq, Arg: arg}
+}
+
+var after_date = func(column string, arg interface{}) qframe.FilterClause {
+	fmt.Printf("\nafter_date: afterDateComparatorFunc type is %T\n\n", afterDateComparatorFunc)
+	dump.V(arg)
+	msgVal = arg.(string)
+	return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: arg}
+}
 
 type DSLFilterConfig struct {
 	Filter Filter `mapstructure:"filter"`
@@ -30,209 +85,202 @@ type BooleanExpression struct {
 
 func (e BooleanExpression) String() string {
 
+	// searchValues := []string{"H2001", "868", "null", "97004", "2023-01-01"}
+	// fmt.Printf("\nsearchValues: %v\n", searchValues)
+	// fmt.Println("\nsearchValues:")
+	// dump.V(searchValues)
+
 	if (!funk.IsEmpty(e.FieldPath) && strings.Contains(e.FieldPath, ",")) &&
 		(!funk.IsEmpty(e.Operator) && strings.Contains(e.Operator, ",")) &&
 		(!funk.IsEmpty(e.Value)) {
 
-		res := "found group expression"
-		groupedFieldNames := strings.Split(e.FieldPath, ",")
-		groupedOperators := strings.Split(e.Operator, ",")
-		// groupedOperators :=  strings.TrimSpace(strings.Split(e.Operator, ","))
-		groupedFieldValues := make([]string, e.valueLength())
-
-		switch val := e.Value.(type) {
-		case string:
-			groupedFieldValues[0] = val
-		case []interface{}:
-			switch val[0].(type) {
-			case string:
-				for i, v := range val {
-					groupedFieldValues[i] = v.(string)
-				}
-			default:
-				return fmt.Sprintf("unsupported data-type(%T) in '[]interface{}' value field for group expression", val[0])
-			}
-		default:
-			return fmt.Sprintf("unsupported data-type(%T) in value field for group expression", val)
-		}
-
-		fmt.Println("\ngroupedFieldNames:")
-		dump.V(groupedFieldNames)
-
-		fmt.Println("\ngroupedOperators:")
-		dump.V(groupedOperators)
-		// dump.V(groupedFieldValues)
-
-		// groupedFieldValueElements := strings.Split(groupedFieldValues[0], ",")
-		// if !(len(groupedFieldNames) == len(groupedOperators) &&
-		// 	len(groupedFieldNames) == len(groupedFieldValueElements)) {
-		// 	res := "should have same number of field(len=%v), operator(len=%v) and value(len=%v) in group expression"
-		// 	return fmt.Sprintf(res, len(groupedFieldNames), len(groupedOperators), len(groupedFieldValueElements))
+		fmt.Println("found group expression")
+		// shouldReturn, returnValue := e.compositeExpression(searchValues)
+		// if shouldReturn {
+		// 	return returnValue
 		// }
-
-		csvData := make([]string, len(groupedFieldValues)+1)
-		for i := 0; i < len(csvData); i++ {
-			if i == 0 {
-				csvData[i] = e.FieldPath
-				// csvData[i] = groupedFieldNames
-			} else {
-				csvData[i] = groupedFieldValues[i-1]
-			}
-		}
-
-		fmt.Println("\ncsvData:")
-		dump.V(csvData)
-
-		// colNames := strings.Split(fieldNames, ",")
-		colTypes := make(map[string]string, len(groupedFieldNames))
-		for _, colName := range groupedFieldNames {
-			colTypes[colName] = types.String
-		}
-		fmt.Println("\ncolTypes:")
-		dump.V(colTypes)
-
-		csvReader := strings.NewReader(strings.Join(csvData, "\n"))
-		csvDF := qframe.ReadCSV(csvReader, csv.Types(colTypes))
-
-		fmt.Println("\ncsvDF:")
-		fmt.Println(csvDF)
-
-		// fmt.Println(
-		// 	csvDF.Sort(
-		// 		qframe.Order{
-		// 			Column: csvDF.ColumnNames()[0],
-		// 			// Reverse:  true,
-		// 			// NullLast: true,
-		// 		},
-		// 	),
+		// return fmt.Sprintf("groupExpression(%v, %v, %v)", e.FieldPath, e.Operator, e.getValueAsString())
+		// return fmt.Sprintf(
+		// 	"groupExpression(%v, %v, %v, %v)",
+		// 	arrutil.AnyToString(strings.Split(e.FieldPath, ",")),
+		// 	formatAnyArrToString(strings.Split(e.Operator, ",")),
+		// 	e.getValueAsString(),
+		// 	e.FieldPath,
+		// )
+		// return fmt.Sprintf(
+		// 	"groupExpression(%v)", "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string]",
 		// )
 
-		columnOrder := make([]qframe.Order, len(groupedFieldNames))
-		// columnOrder := make([]qframe.Order, csvDF.Len())
-		for idx, cName := range groupedFieldNames {
-			columnOrder[idx] = qframe.Order{Column: cName}
-		}
-		// fmt.Printf("columnOrder: %#v\n", columnOrder)
-		fmt.Println("\ncolumnOrder:")
-		dump.V(columnOrder)
-
-		sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
-		fmt.Println("\nsortedCsvDF:")
-		fmt.Println(sortedCsvDF)
-
-		var msgVal string
-		afterDateComparatorFunc := func(colVal *string) bool {
-			var exprSb strings.Builder
-			exprSb.WriteString(msgVal)
-			// exprSb.WriteString("=") //this won't work
-			// exprSb.WriteString("==")
-			// exprSb.WriteString(">=")
-			exprSb.WriteString(">")
-			// exprSb.WriteString("<=")
-			// exprSb.WriteString("<")
-			exprSb.WriteString(*colVal)
-
-			expression, err := govaluate.NewEvaluableExpression(exprSb.String())
-			if err != nil {
-				return false
-			}
-			result, err := expression.Evaluate(nil)
-			if err != nil {
-				return false
-			}
-
-			fmt.Printf("\nafterDateComparatorFunc: result type=%T, value=%v\n", result, result)
-			switch bresult := result.(type) {
-			case bool:
-				return bresult
-			}
-			return false
-		}
-		fmt.Printf("\nafterDateComparatorFunc: type is %T\n\n", afterDateComparatorFunc)
-
-		eq := func(column string, arg interface{}) qframe.FilterClause {
-			return qframe.Filter{Column: column, Comparator: filter.Eq, Arg: arg}
-		}
-		fmt.Printf("\neq Func: type is %T\n\n", eq)
-
-		after_date := func(column string, arg interface{}) qframe.FilterClause {
-			dump.V(arg)
-			msgVal = arg.(string)
-			return qframe.Filter{Column: column, Comparator: afterDateComparatorFunc, Arg: arg}
-		}
-		fmt.Printf("\nafter_date Func: type is %T\n\n", after_date)
-
-		// searchValuesMap := map[string]string{}
-		searchValuesMap := map[string]string{
-			csvDF.ColumnNames()[0]: "H2001",
-			csvDF.ColumnNames()[1]: "868",
-			csvDF.ColumnNames()[2]: "null",
-			csvDF.ColumnNames()[3]: "97004",
-			csvDF.ColumnNames()[4]: "2023-01-01",
-			// csvDF.ColumnNames()[3]: "*",
-			// csvDF.ColumnNames()[4]: "2021-12-31",
-		}
-		// fmt.Printf("searchValuesMap: %v\n\n", searchValuesMap)
-		fmt.Println("\nsearchValuesMap:")
-		dump.V(searchValuesMap)
-
-		filterClauses := make([]qframe.FilterClause, len(groupedOperators))
-		for i := 0; i < len(groupedOperators); i++ {
-			cName := groupedFieldNames[i]
-			// switch groupedOperators[i] {
-			switch strings.TrimSpace(groupedOperators[i]) {
-			// case filter.Eq:
-			case "eq":
-				filterClauses[i] = eq(cName, searchValuesMap[cName])
-			case "after_date":
-				filterClauses[i] = after_date(cName, searchValuesMap[cName])
-			}
-		}
-		// fmt.Printf("filterClauses: %#v\n", filterClauses)
-		fmt.Println("\nfilterClauses:")
-		dump.V(filterClauses)
-
-		filteredCsvDF := sortedCsvDF.Filter(
-			qframe.And(
-				// filterClauses[0:3]...,
-				filterClauses...,
-			),
+		return fmt.Sprintf(
+			"groupExpression(%v, %v, %v, %v)", arrutil.AnyToString(strings.Split(e.FieldPath, ",")),
+			formatAnyArrToString(strings.Split(e.FieldPath, ",")),
+			formatAnyArrToString(strings.Split(e.Operator, ",")),
+			e.getValueAsString(),
 		)
-		fmt.Println("\nfilteredCsvDF:")
-		fmt.Println(filteredCsvDF)
 
-		result := filteredCsvDF.Len() > 0
-		fmt.Printf("filter condition group expression result: %v\n\n", result)
-		return res
+		//below not-working due to groupNumber being inside array
+		// return fmt.Sprintf(
+		// 	"groupExpression(%v)", "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string,#.groupNumber.string,#.effectiveDate.string]",
+		// )
 	}
 
+	return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, e.getValueAsString())
+}
+
+// TODO: handle error
+func (e BooleanExpression) getValueAsString() string {
 	switch val := e.Value.(type) {
 	case string:
-		return fmt.Sprintf("(%v %v '%v')", e.FieldPath, e.Operator, val)
+		return val
 	case int64, uint64, float64:
-		return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, val)
+		return strutil.MustString(val)
 	case []interface{}:
 		switch val[0].(type) {
 		case string:
-			var sb strings.Builder
-			sb.WriteByte('[')
-			for i, v := range val {
-				if i > 0 {
-					sb.WriteByte(',')
-				}
-				sb.WriteString("'")
-				sb.WriteString(strutil.QuietString(v))
-				sb.WriteString("'")
-			}
-			sb.WriteByte(']')
-			return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, sb.String())
+			return formatAnyArrToString(val)
 		default:
-			return fmt.Sprintf("(%v %v %v)", e.FieldPath, e.Operator, arrutil.AnyToString(val))
-			// return fmt.Sprintf("(%v %v %T %v)", e.FieldPath, e.Operator, val[0], arrutil.AnyToString(val))
+			return arrutil.AnyToString(val)
 		}
 	default:
-		return "error"
+		return strutil.MustString(val) //panic when unsupported value type is used
 	}
+}
+
+func formatAnyArrToString(arr any) string {
+	var sb strings.Builder
+	sb.WriteByte('[')
+
+	switch val := arr.(type) {
+	case []interface{}:
+		for i, v := range val {
+			if i > 0 {
+				sb.WriteByte(',')
+			}
+			sb.WriteString("'")
+			sb.WriteString(strutil.MustString(v))
+			sb.WriteString("'")
+		}
+	case []string:
+		for i, v := range val {
+			if i > 0 {
+				sb.WriteByte(',')
+			}
+			sb.WriteString("'")
+			sb.WriteString(strutil.MustString(v))
+			sb.WriteString("'")
+		}
+	}
+	sb.WriteByte(']')
+
+	return sb.String()
+}
+
+// arrutil.AnyToStrings(params[0])
+// func compositeExpression(groupedFieldValuesFromMsg, groupedOperators, groupedFieldValuesFromConfig []string) (bool, error) {
+func compositeExpression(params ...any) (bool, error) {
+	groupedFieldValuesFromMsg := arrutil.AnyToStrings(params[0])
+	fmt.Println("\ngroupedFieldValuesFromMsg:")
+	dump.V(groupedFieldValuesFromMsg)
+
+	groupedFieldNames := arrutil.AnyToStrings(params[1])
+	fmt.Println("\ngroupedFieldNames:")
+	dump.V(groupedFieldNames)
+
+	groupedOperators := arrutil.AnyToStrings(params[2])
+	fmt.Println("\ngroupedOperators:")
+	dump.V(groupedOperators)
+
+	groupedFieldValuesFromConfig := arrutil.AnyToStrings(params[3])
+	fmt.Println("\ngroupedFieldValuesFromConfig:")
+	dump.V(groupedFieldValuesFromConfig)
+
+	// groupedFieldValueElements := strings.Split(groupedFieldValues[0], ",")
+	// if !(len(groupedFieldNames) == len(groupedOperators) &&
+	// 	len(groupedFieldNames) == len(groupedFieldValueElements)) {
+	// 	res := "should have same number of field(len=%v), operator(len=%v) and value(len=%v) in group expression"
+	// 	return fmt.Sprintf(res, len(groupedFieldNames), len(groupedOperators), len(groupedFieldValueElements))
+	// }
+
+	csvData := make([]string, len(groupedFieldValuesFromConfig)+1)
+	for i := 0; i < len(csvData); i++ {
+		if i == 0 {
+			csvData[i] = strings.Join(groupedFieldNames, ",")
+		} else {
+			csvData[i] = groupedFieldValuesFromConfig[i-1]
+		}
+	}
+
+	fmt.Println("\ncsvData:")
+	dump.V(csvData)
+
+	// colNames := strings.Split(fieldNames, ",")
+	colTypes := make(map[string]string, len(groupedFieldNames))
+	for _, colName := range groupedFieldNames {
+		colTypes[colName] = types.String
+	}
+	fmt.Println("\ncolTypes:")
+	dump.V(colTypes)
+
+	csvReader := strings.NewReader(strings.Join(csvData, "\n"))
+	csvDF := qframe.ReadCSV(csvReader, csv.Types(colTypes))
+
+	fmt.Println("\ncsvDF:")
+	fmt.Println(csvDF)
+
+	// fmt.Println(
+	// 	csvDF.Sort(
+	// 		qframe.Order{
+	// 			Column: csvDF.ColumnNames()[0],
+	// 			// Reverse:  true,
+	// 			// NullLast: true,
+	// 		},
+	// 	),
+	// )
+
+	columnOrder := make([]qframe.Order, len(groupedFieldNames))
+	// columnOrder := make([]qframe.Order, csvDF.Len())
+	for idx, cName := range groupedFieldNames {
+		columnOrder[idx] = qframe.Order{Column: cName}
+	}
+	// fmt.Printf("columnOrder: %#v\n", columnOrder)
+	fmt.Println("\ncolumnOrder:")
+	dump.V(columnOrder)
+
+	sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
+	fmt.Println("\nsortedCsvDF:")
+	fmt.Println(sortedCsvDF)
+
+	filterClauses := make([]qframe.FilterClause, len(groupedOperators))
+	for i := 0; i < len(groupedOperators); i++ {
+		cName := groupedFieldNames[i]
+		// switch groupedOperators[i] {
+		switch strings.TrimSpace(groupedOperators[i]) {
+		// case filter.Eq:
+		case "eq":
+			fmt.Printf("\neq Func: type is %T\n", eq)
+			filterClauses[i] = eq(cName, groupedFieldValuesFromMsg[i])
+		case "after_date":
+			fmt.Printf("\nafter_date Func: type is %T\n", after_date)
+			filterClauses[i] = after_date(cName, groupedFieldValuesFromMsg[i])
+		}
+	}
+	// fmt.Printf("filterClauses: %#v\n", filterClauses)
+	fmt.Println("\nfilterClauses:")
+	dump.V(filterClauses)
+
+	filteredCsvDF := sortedCsvDF.Filter(
+		qframe.And(
+			// filterClauses[0:3]...,
+			filterClauses...,
+		),
+	)
+	fmt.Println("\nfilteredCsvDF:")
+	fmt.Println(filteredCsvDF)
+
+	result := filteredCsvDF.Len() > 0
+	fmt.Printf("filter condition group expression result: %v\n\n", result)
+	return result, nil
+	// return false, nil
 }
 
 func (e BooleanExpression) valueLength() int {

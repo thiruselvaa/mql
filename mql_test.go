@@ -54,77 +54,6 @@ var (
 			"effectiveDate": {
 				"string": "2022-12-31"
 			}
-		  },
-		  {
-			"active": true,
-			"hContractId": 
-			{
-				"string": "H2226"
-			},
-			"packageBenefitPlanCode": {
-				"string": "002"
-			},
-			"segmentId": {
-				"string": "001"
-			},
-			"membershipGroupData": {
-				"array": [
-					{
-						"groupNumber": {
-							"string": "12345"
-						}
-					}
-				]
-			},
-			"effectiveDate": {
-				"string": "2022-12-31"
-			}
-		  },
-		  {
-			"active": true,
-			"hContractId": 
-			{
-				"string": "H2226"
-			},
-			"packageBenefitPlanCode": {
-				"string": "003"
-			},
-			"segmentId": {
-				"string": "null"
-			},
-			"membershipGroupData": {
-				"array": [
-				  
-				]
-			},
-			"effectiveDate": {
-				"string": "2022-12-31"
-			}
-		  },
-		  {
-			"active": true,
-			"hContractId": 
-			{
-				"string": "H2226"
-			},
-			"packageBenefitPlanCode": {
-				"string": "004"
-			},
-			"segmentId": {
-				"string": "002"
-			},
-			"membershipGroupData": {
-				"array": [
-				  {
-					"groupNumber": {
-						"string": "null"
-					}
-				  }
-				]
-			},
-			"effectiveDate": {
-				"string": "2022-12-31"
-			}
 		  }
 		]
 	},
@@ -270,8 +199,8 @@ func Test_mql(t *testing.T) {
 	// smfConfig, err := models.NewSMFConfig(configFile)
 
 	configFile := "configs/dsl/solutran/json/solutran-dsl-filter-config.json"
-	// smfConfig, err := models.NewDSLFilterConfig(configFile)
-	_, err = models.NewDSLFilterConfig(configFile)
+	smfConfig, err := models.NewDSLFilterConfig(configFile)
+	// _, err = models.NewDSLFilterConfig(configFile)
 	if err != nil {
 		fmt.Printf("error parsing smf config file: %v", err)
 		return
@@ -555,7 +484,8 @@ func Test_mql(t *testing.T) {
 				// 			any(#.membershipGroupData.array[:],
 				// 				(((((#.groupNumber.string in ['','12345','100','97008','97007','97006','97005','97004','97003','12830','null','*']))))))))))))))
 				// `,
-				// // // expression: smfConfig.Filter.Condition.String(),
+
+				expression: smfConfig.Filter.Condition.String(),
 
 				// expression: whereString(smfConfig),
 				// expression: "true",
@@ -683,23 +613,9 @@ func Test_mql(t *testing.T) {
 				// `,
 				//
 
-				expression: `
-					map(
-						filter(message.memberships.array,
-							{
-								.hContractId.string startsWith "H2226" and
-								.packageBenefitPlanCode.string startsWith "002" and
-								.segmentId.string startsWith "001"
-							}
-						),
-						{
-							.hContractId.string + "," +
-							.packageBenefitPlanCode.string + "," +
-							.segmentId.string + "," +
-							.effectiveDate.string
-						}
-					)
-				`,
+				// expression: `
+				// (((any(message.memberships.array[:], (((groupExpression(#.hContractId.string))))))))
+				// `,
 
 				// expression: `map(message.memberships.array,  map(filter(.membershipGroupData.array, .groupNumber.string matches '.*'), .groupNumber.string))`,
 

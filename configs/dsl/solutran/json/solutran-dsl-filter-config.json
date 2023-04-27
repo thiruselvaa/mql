@@ -10,32 +10,11 @@
             "condition": {
               "expression": [
                 {
-                  "field_path": "#.hContractId.string,#.packageBenefitPlanCode.string,#.segmentId.string,#.groupNumber.string,#.effectiveDate.string",
-                  "operator": "eq, eq, eq",
+                  "field_path": "#.hContractId.string,#.packageBenefitPlanCode.string,#.segmentId.string, #.effectiveDate.string",
+                  "operator": "eq, eq, eq, after_date",
                   "value": [
-                    "H0169,001,null,*,2020-12-31",
-                    "H0169,002,null,*,2020-12-31",
-                    "H2001,017,null,*,2020-12-31",
-                    "H2001,018,null,*,2020-12-31",
-                    "H2001,817,null,12830,2020-12-31",
-                    "H2577,001,002,*,2020-12-31",
-                    "H2577,002,null,*,2020-12-31",
-                    "H3805,001,null,*,2020-12-31",
-                    "H3805,021,null,*,2020-12-31",
-                    "H3805,025,001,*,2020-12-31",
-                    "H3805,025,002,*,2020-12-31",
-                    "H3805,029,null,*,2020-12-31",
-                    "H3805,033,null,*,2020-12-31",
-                    "H4514,007,null,*,2020-12-31",
-                    "H4514,013,001,*,2020-12-31",
-                    "H4514,013,002,*,2020-12-31",
-                    "H4514,013,003,*,2020-12-31",
-                    "H2001,868,null,97003,2022-12-31",
-                    "H2001,868,null,97004,2022-12-31",
-                    "H2001,868,null,97005,2022-12-31",
-                    "H2001,859,null,97006,2020-12-31",
-                    "H2001,859,null,97007,2020-12-31",
-                    "H2001,859,null,97008,2020-12-31"
+                    "H2226,001,null,2020-12-31",
+                    "H2227,002,null,2020-12-31"
                   ]
                 }
               ]

@@ -15,6 +15,10 @@ type Env struct {
 	Tweets []Tweet
 }
 
+// var group_expression = func() bool {
+
+// }
+
 func main() {
 	// // configFile := "configs/native-filter-query.json"
 	// configFile := "configs/native-filter-query.yaml"
@@ -48,7 +52,7 @@ func main() {
 
 func mql(expression string, env interface{}) (interface{}, error) {
 
-	program, err := expr.Compile(expression)
+	program, err := expr.Compile(expression, models.GroupExpression)
 	if err != nil {
 		return nil, err
 	}
