@@ -10,11 +10,11 @@
             "condition": {
               "expression": [
                 {
-                  "field_path": "#.hContractId.string,#.packageBenefitPlanCode.string,#.segmentId.string, #.effectiveDate.string",
-                  "operator": "eq, eq, eq, after_date",
+                  "field_path": "#.hContractId.string,#.packageBenefitPlanCode.string,#.segmentId.string,#.membershipGroupData.array[:].groupNumber.string,#.effectiveDate.string",
+                  "operator": "eq, eq, eq, eq, after_date",
                   "value": [
-                    "H2226,001,null,2020-12-31",
-                    "H2227,002,null,2020-12-31"
+                    "H2226,001,null,*,2020-12-31",
+                    "H2227,002,null,*,2020-12-31"
                   ]
                 }
               ]

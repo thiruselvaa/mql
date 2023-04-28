@@ -62,6 +62,7 @@ var afterDateComparatorFunc = func(colVal *string) bool {
 }
 
 var eq = func(column string, arg interface{}) qframe.FilterClause {
+
 	return qframe.Filter{Column: column, Comparator: filter.Eq, Arg: arg}
 }
 
@@ -112,7 +113,16 @@ func (e BooleanExpression) String() string {
 		// )
 
 		return fmt.Sprintf(
-			"groupExpression(%v, %v, %v, %v)", arrutil.AnyToString(strings.Split(e.FieldPath, ",")),
+			"groupExpression(%v, %v, %v, %v)",
+			// arrutil.AnyToString(strings.Split(e.FieldPath, ",")),
+			// "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string, #.membershipGroupData.array[:].groupNumber.string, #.effectiveDate.string]",
+			// "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string, map(.membershipGroupData.array, .groupNumber.string), #.effectiveDate.string]",
+			// "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string, #.effectiveDate.string]",
+			// "[#.hContractId.string, #.packageBenefitPlanCode.string, '[, 100, 0, 1]']",
+			// "[#.hContractId.string, #.packageBenefitPlanCode.string, ', 100, 0, 1']",
+			// "[#.hContractId.string, #.packageBenefitPlanCode.string, '[, 100, null, 1]']",
+			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, '[, 100, null, 1]', #.effectiveDate.string]",
+			// "[#.hContractId.string, #.packageBenefitPlanCode.string, \"[' ', '100', '0', '1']\"",
 			formatAnyArrToString(strings.Split(e.FieldPath, ",")),
 			formatAnyArrToString(strings.Split(e.Operator, ",")),
 			e.getValueAsString(),
@@ -250,32 +260,122 @@ func compositeExpression(params ...any) (bool, error) {
 	fmt.Println("\nsortedCsvDF:")
 	fmt.Println(sortedCsvDF)
 
-	filterClauses := make([]qframe.FilterClause, len(groupedOperators))
+	anyStringValue := "*"
+	var filteredCsvDF qframe.QFrame
+	var filterClause qframe.FilterClause
 	for i := 0; i < len(groupedOperators); i++ {
+		if i == 0 {
+			filteredCsvDF = sortedCsvDF
+		}
+
 		cName := groupedFieldNames[i]
 		// switch groupedOperators[i] {
 		switch strings.TrimSpace(groupedOperators[i]) {
 		// case filter.Eq:
 		case "eq":
 			fmt.Printf("\neq Func: type is %T\n", eq)
-			filterClauses[i] = eq(cName, groupedFieldValuesFromMsg[i])
+
+			fmt.Printf("\nfilteredCsvDF.Select(%v):\n", cName)
+			fmt.Println(filteredCsvDF.Select(cName))
+
+			tempFilteredCsvDF := filteredCsvDF.Select(cName).Filter(
+				eq(cName, anyStringValue),
+			)
+
+			fmt.Println("\ntempFilteredCsvDF:")
+			fmt.Println(tempFilteredCsvDF)
+
+			if tempFilteredCsvDF.Len() > 0 {
+				groupedFieldValuesFromMsg[i] = anyStringValue
+			}
+
+			filterClause = eq(cName, groupedFieldValuesFromMsg[i])
 		case "after_date":
 			fmt.Printf("\nafter_date Func: type is %T\n", after_date)
-			filterClauses[i] = after_date(cName, groupedFieldValuesFromMsg[i])
+			filterClause = after_date(cName, groupedFieldValuesFromMsg[i])
 		}
-	}
-	// fmt.Printf("filterClauses: %#v\n", filterClauses)
-	fmt.Println("\nfilterClauses:")
-	dump.V(filterClauses)
+		fmt.Printf("\nfilterClause[%v]:\n", i)
+		dump.V(filterClause)
 
-	filteredCsvDF := sortedCsvDF.Filter(
-		qframe.And(
-			// filterClauses[0:3]...,
-			filterClauses...,
-		),
-	)
-	fmt.Println("\nfilteredCsvDF:")
-	fmt.Println(filteredCsvDF)
+		filteredCsvDF = filteredCsvDF.Filter(filterClause)
+
+		fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
+		fmt.Println(filteredCsvDF)
+	}
+	//
+	// anyStringValue := "*"
+	// var temp int
+	// filterClauses := make([]qframe.FilterClause, len(groupedOperators))
+	// for i := 0; i < len(groupedOperators); i++ {
+	// 	cName := groupedFieldNames[i]
+	// 	// switch groupedOperators[i] {
+	// 	switch strings.TrimSpace(groupedOperators[i]) {
+	// 	// case filter.Eq:
+	// 	case "eq":
+	// 		fmt.Printf("\neq Func: type is %T\n", eq)
+	// 		strView, err := sortedCsvDF.StringView(cName)
+	// 		if err != nil {
+	// 			fmt.Printf("\nsortedCsvDF.StringView(%v) err: %v\n", cName, err)
+	// 		}
+	// 		fmt.Printf("\nsortedCsvDF.StringView(%v):\n", cName)
+	// 		dump.V(strView)
+	// 		dump.V(strView.View)
+	// 		// dump.V(*strView.View.ItemAt(1))
+
+	// 		for i := 0; i < sortedCsvDF.Len(); i++ {
+	// 			dump.V(*strView.View.ItemAt(i))
+
+	// 			if strutil.Equal(*strView.View.ItemAt(i), anyStringValue) {
+	// 				temp++
+	// 			}
+	// 		}
+	// 		fmt.Printf("\nColumn: %v, sortedCsvDF.Len(): %v, count of *: %v\n", cName, sortedCsvDF.Len(), temp)
+	// 		// if temp == sortedCsvDF.Len() {
+	// 		// 	groupedFieldValuesFromMsg[i] = anyStringValue
+	// 		// }
+
+	// 		filterClauses[i] = eq(cName, groupedFieldValuesFromMsg[i])
+	// 	case "after_date":
+	// 		fmt.Printf("\nafter_date Func: type is %T\n", after_date)
+	// 		filterClauses[i] = after_date(cName, groupedFieldValuesFromMsg[i])
+	// 	}
+	// }
+	//
+
+	// three := 3
+	// fmt.Println("\nfilterClauses[0:3]:")
+	// dump.V(filterClauses[0:three])
+	// filteredCsvDF := sortedCsvDF.Filter(
+	// 	qframe.And(
+	// 		filterClauses[0:3]...,
+	// 	),
+	// )
+	// fmt.Println("\nfilteredCsvDF:")
+	// fmt.Println(filteredCsvDF)
+
+	// fmt.Println("\nfilterClauses[3:]:")
+	// dump.V(filterClauses[3:])
+	// filteredCsvDF = sortedCsvDF.Filter(
+	// 	qframe.And(
+	// 		filterClauses[3:]...,
+	// 	),
+	// )
+
+	//
+	// fmt.Printf("filterClauses: %#v\n", filterClauses)
+	// fmt.Println("\nfilterClauses:")
+	// dump.V(filterClauses)
+
+	// filteredCsvDF := sortedCsvDF.Filter(
+	// 	qframe.And(
+	// 		// filterClauses[0:3]...,
+	// 		filterClauses...,
+	// 	),
+	// )
+
+	// fmt.Println("\nfilteredCsvDF:")
+	// fmt.Println(filteredCsvDF)
+	//
 
 	result := filteredCsvDF.Len() > 0
 	fmt.Printf("filter condition group expression result: %v\n\n", result)

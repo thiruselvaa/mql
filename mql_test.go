@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/jsonutil"
 	"github.com/thiruselvaa/mql/models"
@@ -47,6 +48,32 @@ var (
 				  {
 					"groupNumber": {
 						"string": "100"
+					}
+				  }
+				]
+			},
+			"effectiveDate": {
+				"string": "2022-12-31"
+			}
+		  },{
+			"active": true,
+			"hContractId": 
+			{
+				"string": "H2227"
+			},
+			"packageBenefitPlanCode": {
+				"string": "001"
+			},
+			"segmentId": {
+				"string": "null"
+			},
+			"membershipGroupData": {
+				"array": [
+				  {
+				  },
+				  {
+					"groupNumber": {
+						"string": "1"
 					}
 				  }
 				]
@@ -200,11 +227,11 @@ func Test_mql(t *testing.T) {
 
 	configFile := "configs/dsl/solutran/json/solutran-dsl-filter-config.json"
 	smfConfig, err := models.NewDSLFilterConfig(configFile)
-	// _, err = models.NewDSLFilterConfig(configFile)
 	if err != nil {
 		fmt.Printf("error parsing smf config file: %v", err)
 		return
 	}
+	fmt.Printf("\nsmfConfig: %v\n", smfConfig)
 
 	type args struct {
 		expression string
@@ -485,6 +512,8 @@ func Test_mql(t *testing.T) {
 				// 				(((((#.groupNumber.string in ['','12345','100','97008','97007','97006','97005','97004','97003','12830','null','*']))))))))))))))
 				// `,
 
+				// // //expression: smfConfig.Filter.Condition.String(),
+				//thiru
 				expression: smfConfig.Filter.Condition.String(),
 
 				// expression: whereString(smfConfig),
@@ -563,6 +592,119 @@ func Test_mql(t *testing.T) {
 				// 	)
 				// `,
 				//
+
+				//
+				// expression: `
+				// 	map(message.memberships.array,
+				// 		map(.membershipGroupData.array, .groupNumber.string)
+				// 	)
+				// `,
+				//
+
+				//
+				// expression: `
+				// 	any(message.memberships.array,
+				// 		len(map(.membershipGroupData.array, .groupNumber.string)) > 0
+				// 	)
+				// `,
+				//
+
+				// expression: `
+				// 	map(
+				// 		message.memberships.array, .membershipGroupData.array[0-1].groupNumber
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		message.memberships.array, .membershipGroupData.array[1].groupNumber.string
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		message.memberships.array,
+				// 		map(.membershipGroupData.array, .groupNumber.string)[:]
+				// 	)
+				// `,
+
+				// expression: `
+				// 	len(
+				// 		map(
+				// 			message.memberships.array,
+				// 			map(.membershipGroupData.array, .groupNumber.string)
+				// 		)
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		message.memberships.array,
+				// 		len(
+				// 			map(.membershipGroupData.array, .groupNumber.string)
+				// 		)
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		message.memberships.array,
+				// 		map(#.membershipGroupData.array, (.groupNumber.string == "*" || .groupNumber.string == "100")  )
+				// 	)
+				// `,
+
+				// expression: `
+				// 	message?.memberships?.array
+				// 	??
+				// 	map(
+				// 		filter(message.memberships.array, len(.membershipGroupData) > 0),
+				// 		map(
+				// 			filter(.membershipGroupData.array,  len(.groupNumber.string) >= 0),
+				// 			.groupNumber.string
+				// 		)
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message.memberships.array ?? [], len(.membershipGroupData) > 0),
+				// 		map(
+				// 			filter(.membershipGroupData.array ?? [],  len(.groupNumber?.string ?? "") >= 0),
+				// 			.groupNumber?.string
+				// 		)
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message?.memberships?.array ?? [], len(#?.membershipGroupData) > 0),
+				// 		map(
+				// 			filter(#?.membershipGroupData?.array ?? [],  len(#?.groupNumber?.string ?? "") >= 0),
+				// 			.groupNumber?.string ?? "null"
+				// 		)
+				// 	)
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		filter(message?.memberships?.array ?? [], len(#?.membershipGroupData) > 0),
+				// 		map(
+				// 			#?.membershipGroupData?.array ?? [],
+				// 			.groupNumber?.string ?? "null"
+				// 		)
+				// 	)
+				// `,
+
+				//thiru
+				// expression: `
+				// 	map(
+				// 		message?.memberships?.array ?? [],
+				// 		map(
+				// 			#?.membershipGroupData?.array ?? [],
+				// 			.groupNumber?.string ?? "null"
+				// 		)
+				// 	)
+				// `,
 
 				//
 				// expression: `
@@ -827,14 +969,56 @@ func Test_mql(t *testing.T) {
 			}
 			dump.V(string(value))
 
-			// fmt.Printf("gotResult: %#v\n\n", arrutil.AnyToString(arrutil.SliceToStrings(gotResult.([]interface{}))))
+			switch gotResult := gotResult.(type) {
+			case []interface{}:
+				// flattenArr := Flatten(gotResult.([]interface{}))
+				flattenArr := Flatten(gotResult)
+				fmt.Printf("flattenArr := Flatten(gotResult.([]interface{})): type=%T, %#v\n\n", flattenArr, flattenArr)
 
-			fmt.Printf("mql() output type(%T)= value(%#v), want %v, err = %v\n", gotResult, gotResult, tt.wantResult, err)
+				flattenArrStr := arrutil.AnyToString(flattenArr)
+				fmt.Printf("flattenArrStr := arrutil.AnyToString(flattenArr): type=%T, %#v\n\n", flattenArrStr, flattenArrStr)
+
+				flattenSliceStr := arrutil.SliceToString(flattenArr)
+				fmt.Printf("flattenSliceStr := arrutil.SliceToString(flattenArr): type=%T, %#v\n\n", flattenSliceStr, flattenSliceStr)
+
+				flattenArrStrs := arrutil.AnyToStrings(flattenArr)
+				fmt.Printf("flattenArrStrs := arrutil.AnyToStrings(flattenArr): type=%T, %#v\n\n", flattenArrStrs, flattenArrStrs)
+
+				flattenSliceStrs := arrutil.SliceToStrings(flattenArr)
+				fmt.Printf("flattenSliceStrs := arrutil.SliceToStrings(flattenArr): type=%T, %#v\n\n", flattenSliceStrs, flattenSliceStrs)
+
+				fmt.Printf("\narrutil.SliceToStrings(gotResult.([]interface{})): %#v\n\n",
+					arrutil.SliceToStrings(gotResult))
+				fmt.Printf("arrutil.SliceToString(gotResult.([]interface{})): %#v\n\n",
+					arrutil.SliceToString(gotResult))
+				fmt.Printf("arrutil.AnyToString(arrutil.SliceToStrings(gotResult.([]interface{}))): %#v\n\n",
+					arrutil.AnyToString(arrutil.SliceToStrings(gotResult)))
+			}
+
+			fmt.Printf("mql() output type(%T), value(%#v), want %v, err = %v\n", gotResult, gotResult, tt.wantResult, err)
 			if !reflect.DeepEqual(gotResult, tt.wantResult) {
 				t.Errorf("mql() = %v, want %v", gotResult, tt.wantResult)
 			}
 		})
 	}
+}
+
+// Flatten will take an array of nested array and return
+// all nested elements in an array. e.g. [[1,2,[3]],4] -> [1,2,3,4]
+func Flatten(nested []interface{}) []interface{} {
+	flattened := make([]interface{}, 0)
+
+	for _, i := range nested {
+		switch i := i.(type) {
+		case []interface{}:
+			flattenedSubArray := Flatten(i)
+			flattened = append(flattened, flattenedSubArray...)
+		case interface{}:
+			flattened = append(flattened, i)
+		}
+	}
+
+	return flattened
 }
 
 // func whereString(smfConfig *models.SMFConfig) string {
