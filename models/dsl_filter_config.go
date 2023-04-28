@@ -22,16 +22,15 @@ var GroupExpression = expr.Function(
 	"groupExpression",
 	func(params ...any) (any, error) {
 		return compositeExpression(params...)
-		// return compositeExpression(
-		// 	arrutil.AnyToStrings(params[0]),
-		// 	arrutil.AnyToStrings(params[1]),
-		// 	arrutil.AnyToStrings(params[2]),
-		// )
 	},
 	new(func([]interface{}, []interface{}, []interface{}, []interface{}) bool),
-	// new(func([]string, []string, []string) bool),
 )
 
+// TODO: refactor the below global variables to use singleton/other struct values
+// var dataframe *qframe.QFrame = new(qframe.QFrame)
+// var dataframe *qframe.QFrame
+
+var dataframe qframe.QFrame
 var msgVal string
 var afterDateComparatorFunc = func(colVal *string) bool {
 	var exprSb strings.Builder
@@ -112,17 +111,25 @@ func (e BooleanExpression) String() string {
 		// 	"groupExpression(%v)", "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string]",
 		// )
 
+		groupedFieldNames := strings.Split(e.FieldPath, ",")
+		fmt.Println("\ngroupedFieldNames:")
+		dump.V(groupedFieldNames)
+
+		groupedFieldValuesFromConfig := arrutil.AnyToStrings(e.Value)
+		fmt.Println("\ngroupedFieldValuesFromConfig:")
+		dump.V(groupedFieldValuesFromConfig)
+
+		if funk.IsEmpty(dataframe) {
+			fmt.Println("\ncreating dataframe:")
+
+			dataframe = createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig)
+
+			fmt.Println(dataframe)
+		}
+
 		return fmt.Sprintf(
 			"groupExpression(%v, %v, %v, %v)",
-			// arrutil.AnyToString(strings.Split(e.FieldPath, ",")),
-			// "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string, #.membershipGroupData.array[:].groupNumber.string, #.effectiveDate.string]",
-			// "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string, map(.membershipGroupData.array, .groupNumber.string), #.effectiveDate.string]",
-			// "[#.hContractId.string, #.packageBenefitPlanCode.string, #.segmentId.string, #.effectiveDate.string]",
-			// "[#.hContractId.string, #.packageBenefitPlanCode.string, '[, 100, 0, 1]']",
-			// "[#.hContractId.string, #.packageBenefitPlanCode.string, ', 100, 0, 1']",
-			// "[#.hContractId.string, #.packageBenefitPlanCode.string, '[, 100, null, 1]']",
 			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, '[, 100, null, 1]', #.effectiveDate.string]",
-			// "[#.hContractId.string, #.packageBenefitPlanCode.string, \"[' ', '100', '0', '1']\"",
 			formatAnyArrToString(strings.Split(e.FieldPath, ",")),
 			formatAnyArrToString(strings.Split(e.Operator, ",")),
 			e.getValueAsString(),
@@ -192,6 +199,8 @@ func compositeExpression(params ...any) (bool, error) {
 	fmt.Println("\ngroupedFieldValuesFromMsg:")
 	dump.V(groupedFieldValuesFromMsg)
 
+	//TODO: start - initialize the below values only once and not for every message processing
+	// Thats because these values are coming from config and expected to not change for every message
 	groupedFieldNames := arrutil.AnyToStrings(params[1])
 	fmt.Println("\ngroupedFieldNames:")
 	dump.V(groupedFieldNames)
@@ -203,6 +212,7 @@ func compositeExpression(params ...any) (bool, error) {
 	groupedFieldValuesFromConfig := arrutil.AnyToStrings(params[3])
 	fmt.Println("\ngroupedFieldValuesFromConfig:")
 	dump.V(groupedFieldValuesFromConfig)
+	//TODO: end
 
 	// groupedFieldValueElements := strings.Split(groupedFieldValues[0], ",")
 	// if !(len(groupedFieldNames) == len(groupedOperators) &&
@@ -211,94 +221,67 @@ func compositeExpression(params ...any) (bool, error) {
 	// 	return fmt.Sprintf(res, len(groupedFieldNames), len(groupedOperators), len(groupedFieldValueElements))
 	// }
 
-	csvData := make([]string, len(groupedFieldValuesFromConfig)+1)
-	for i := 0; i < len(csvData); i++ {
-		if i == 0 {
-			csvData[i] = strings.Join(groupedFieldNames, ",")
-		} else {
-			csvData[i] = groupedFieldValuesFromConfig[i-1]
-		}
+	//TODO: avoid using dataframe global variables and instead use struct variables
+	if funk.IsEmpty(dataframe) {
+		fmt.Println("\ndataframe:")
+
+		dataframe = createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig)
+
+		fmt.Println(dataframe)
 	}
 
-	fmt.Println("\ncsvData:")
-	dump.V(csvData)
-
-	// colNames := strings.Split(fieldNames, ",")
-	colTypes := make(map[string]string, len(groupedFieldNames))
-	for _, colName := range groupedFieldNames {
-		colTypes[colName] = types.String
-	}
-	fmt.Println("\ncolTypes:")
-	dump.V(colTypes)
-
-	csvReader := strings.NewReader(strings.Join(csvData, "\n"))
-	csvDF := qframe.ReadCSV(csvReader, csv.Types(colTypes))
-
-	fmt.Println("\ncsvDF:")
-	fmt.Println(csvDF)
-
-	// fmt.Println(
-	// 	csvDF.Sort(
-	// 		qframe.Order{
-	// 			Column: csvDF.ColumnNames()[0],
-	// 			// Reverse:  true,
-	// 			// NullLast: true,
-	// 		},
-	// 	),
-	// )
-
-	columnOrder := make([]qframe.Order, len(groupedFieldNames))
-	// columnOrder := make([]qframe.Order, csvDF.Len())
-	for idx, cName := range groupedFieldNames {
-		columnOrder[idx] = qframe.Order{Column: cName}
-	}
-	// fmt.Printf("columnOrder: %#v\n", columnOrder)
-	fmt.Println("\ncolumnOrder:")
-	dump.V(columnOrder)
-
-	sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
-	fmt.Println("\nsortedCsvDF:")
-	fmt.Println(sortedCsvDF)
-
-	anyStringValue := "*"
+	asteriskStringValue := "*"
+	nullStringValue := "null"
 	var filteredCsvDF qframe.QFrame
 	var filterClause qframe.FilterClause
 	for i := 0; i < len(groupedOperators); i++ {
 		if i == 0 {
-			filteredCsvDF = sortedCsvDF
+			// filteredCsvDF = *dataframe
+			filteredCsvDF = dataframe
 		}
 
-		cName := groupedFieldNames[i]
-		// switch groupedOperators[i] {
-		switch strings.TrimSpace(groupedOperators[i]) {
-		// case filter.Eq:
-		case "eq":
-			fmt.Printf("\neq Func: type is %T\n", eq)
+		if filteredCsvDF.Len() > 0 {
+			cName := filteredCsvDF.ColumnNames()[i]
+			// switch groupedOperators[i] {
+			switch strings.TrimSpace(groupedOperators[i]) {
+			// case filter.Eq:
+			case "eq":
+				fmt.Printf("\neq Func: type is %T\n", eq)
 
-			fmt.Printf("\nfilteredCsvDF.Select(%v):\n", cName)
-			fmt.Println(filteredCsvDF.Select(cName))
+				fmt.Printf("\nfilteredCsvDF.Select(%v).Distinct():\n", cName)
+				distinctFilteredCsvDF := filteredCsvDF.Select(cName).Distinct()
+				fmt.Println(distinctFilteredCsvDF)
 
-			tempFilteredCsvDF := filteredCsvDF.Select(cName).Filter(
-				eq(cName, anyStringValue),
-			)
+				asteriskFilteredCsvDF := distinctFilteredCsvDF.Filter(
+					eq(cName, asteriskStringValue),
+				)
+				fmt.Println("\nasteriskFilteredCsvDF:")
+				fmt.Println(asteriskFilteredCsvDF)
 
-			fmt.Println("\ntempFilteredCsvDF:")
-			fmt.Println(tempFilteredCsvDF)
+				nullFilteredCsvDF := distinctFilteredCsvDF.Filter(
+					eq(cName, nullStringValue),
+				)
+				fmt.Println("\nnullFilteredCsvDF:")
+				fmt.Println(nullFilteredCsvDF)
 
-			if tempFilteredCsvDF.Len() > 0 {
-				groupedFieldValuesFromMsg[i] = anyStringValue
+				if groupedFieldValuesFromMsg[i] != nullStringValue {
+					if asteriskFilteredCsvDF.Len()+nullFilteredCsvDF.Len() == distinctFilteredCsvDF.Len() {
+						groupedFieldValuesFromMsg[i] = asteriskStringValue
+					}
+				} else {
+					//TODO: handle all other possible values than '*' and 'null', may need looping based lookup
+				}
+
+				filterClause = eq(cName, groupedFieldValuesFromMsg[i])
+			case "after_date":
+				fmt.Printf("\nafter_date Func: type is %T\n", after_date)
+				filterClause = after_date(cName, groupedFieldValuesFromMsg[i])
 			}
+			fmt.Printf("\nfilterClause[%v]:\n", i)
+			dump.V(filterClause)
 
-			filterClause = eq(cName, groupedFieldValuesFromMsg[i])
-		case "after_date":
-			fmt.Printf("\nafter_date Func: type is %T\n", after_date)
-			filterClause = after_date(cName, groupedFieldValuesFromMsg[i])
+			filteredCsvDF = filteredCsvDF.Filter(filterClause)
 		}
-		fmt.Printf("\nfilterClause[%v]:\n", i)
-		dump.V(filterClause)
-
-		filteredCsvDF = filteredCsvDF.Filter(filterClause)
-
 		fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
 		fmt.Println(filteredCsvDF)
 	}
@@ -377,10 +360,68 @@ func compositeExpression(params ...any) (bool, error) {
 	// fmt.Println(filteredCsvDF)
 	//
 
+	fmt.Printf("\nfinal filteredCsvDF:\n")
+	fmt.Println(filteredCsvDF)
+
 	result := filteredCsvDF.Len() > 0
 	fmt.Printf("filter condition group expression result: %v\n\n", result)
 	return result, nil
 	// return false, nil
+}
+
+// func createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig []string) *qframe.QFrame {
+func createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig []string) qframe.QFrame {
+	csvData := make([]string, len(groupedFieldValuesFromConfig)+1)
+	for i := 0; i < len(csvData); i++ {
+		if i == 0 {
+			csvData[i] = strings.Join(groupedFieldNames, ",")
+		} else {
+			csvData[i] = groupedFieldValuesFromConfig[i-1]
+		}
+	}
+
+	fmt.Println("\ncsvData:")
+	dump.V(csvData)
+
+	// colNames := strings.Split(fieldNames, ",")
+	colTypes := make(map[string]string, len(groupedFieldNames))
+	for _, colName := range groupedFieldNames {
+		colTypes[colName] = types.String
+	}
+	fmt.Println("\ncolTypes:")
+	dump.V(colTypes)
+
+	csvReader := strings.NewReader(strings.Join(csvData, "\n"))
+	csvDF := qframe.ReadCSV(csvReader, csv.Types(colTypes))
+
+	fmt.Println("\ncsvDF:")
+	fmt.Println(csvDF)
+
+	// fmt.Println(
+	// 	csvDF.Sort(
+	// 		qframe.Order{
+	// 			Column: csvDF.ColumnNames()[0],
+	// 			// Reverse:  true,
+	// 			// NullLast: true,
+	// 		},
+	// 	),
+	// )
+
+	columnOrder := make([]qframe.Order, len(groupedFieldNames))
+	// columnOrder := make([]qframe.Order, csvDF.Len())
+	for idx, cName := range groupedFieldNames {
+		columnOrder[idx] = qframe.Order{Column: cName}
+	}
+	// fmt.Printf("columnOrder: %#v\n", columnOrder)
+	fmt.Println("\ncolumnOrder:")
+	dump.V(columnOrder)
+
+	sortedCsvDF := csvDF.Distinct().Sort(columnOrder...)
+	fmt.Println("\nsortedCsvDF:")
+	fmt.Println(sortedCsvDF)
+
+	// return &sortedCsvDF
+	return sortedCsvDF
 }
 
 func (e BooleanExpression) valueLength() int {
