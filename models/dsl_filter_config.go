@@ -18,6 +18,11 @@ import (
 	"github.com/tobgu/qframe/types"
 )
 
+const (
+	asteriskStringValue = "*"
+	nullStringValue     = "null"
+)
+
 var GroupExpression = expr.Function(
 	"groupExpression",
 	func(params ...any) (any, error) {
@@ -230,135 +235,40 @@ func compositeExpression(params ...any) (bool, error) {
 		fmt.Println(dataframe)
 	}
 
-	asteriskStringValue := "*"
-	nullStringValue := "null"
 	var filteredCsvDF qframe.QFrame
 	var filterClause qframe.FilterClause
 	for i := 0; i < len(groupedOperators); i++ {
+		groupedFieldValueFromMsg := groupedFieldValuesFromMsg[i]
+		groupedOperator := groupedOperators[i]
+
 		if i == 0 {
-			// filteredCsvDF = *dataframe
-			filteredCsvDF = dataframe
+			cName := dataframe.ColumnNames()[i]
+			filterClause = getFilterClause(dataframe, cName, groupedOperator, groupedFieldValueFromMsg)
+
+			fmt.Printf("\nfilterClause[%v]:\n", i)
+			dump.V(filterClause)
+
+			filteredCsvDF = dataframe.Filter(filterClause)
+
+			fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
+			fmt.Println(filteredCsvDF)
 		}
 
-		if filteredCsvDF.Len() > 0 {
+		if filteredCsvDF.Len() == 0 {
+			break
+		} else {
 			cName := filteredCsvDF.ColumnNames()[i]
-			// switch groupedOperators[i] {
-			switch strings.TrimSpace(groupedOperators[i]) {
-			// case filter.Eq:
-			case "eq":
-				fmt.Printf("\neq Func: type is %T\n", eq)
+			filterClause = getFilterClause(filteredCsvDF, cName, groupedOperator, groupedFieldValueFromMsg)
 
-				fmt.Printf("\nfilteredCsvDF.Select(%v).Distinct():\n", cName)
-				distinctFilteredCsvDF := filteredCsvDF.Select(cName).Distinct()
-				fmt.Println(distinctFilteredCsvDF)
-
-				asteriskFilteredCsvDF := distinctFilteredCsvDF.Filter(
-					eq(cName, asteriskStringValue),
-				)
-				fmt.Println("\nasteriskFilteredCsvDF:")
-				fmt.Println(asteriskFilteredCsvDF)
-
-				nullFilteredCsvDF := distinctFilteredCsvDF.Filter(
-					eq(cName, nullStringValue),
-				)
-				fmt.Println("\nnullFilteredCsvDF:")
-				fmt.Println(nullFilteredCsvDF)
-
-				if groupedFieldValuesFromMsg[i] != nullStringValue {
-					if asteriskFilteredCsvDF.Len()+nullFilteredCsvDF.Len() == distinctFilteredCsvDF.Len() {
-						groupedFieldValuesFromMsg[i] = asteriskStringValue
-					}
-				} else {
-					//TODO: handle all other possible values than '*' and 'null', may need looping based lookup
-				}
-
-				filterClause = eq(cName, groupedFieldValuesFromMsg[i])
-			case "after_date":
-				fmt.Printf("\nafter_date Func: type is %T\n", after_date)
-				filterClause = after_date(cName, groupedFieldValuesFromMsg[i])
-			}
 			fmt.Printf("\nfilterClause[%v]:\n", i)
 			dump.V(filterClause)
 
 			filteredCsvDF = filteredCsvDF.Filter(filterClause)
+
+			fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
+			fmt.Println(filteredCsvDF)
 		}
-		fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
-		fmt.Println(filteredCsvDF)
 	}
-	//
-	// anyStringValue := "*"
-	// var temp int
-	// filterClauses := make([]qframe.FilterClause, len(groupedOperators))
-	// for i := 0; i < len(groupedOperators); i++ {
-	// 	cName := groupedFieldNames[i]
-	// 	// switch groupedOperators[i] {
-	// 	switch strings.TrimSpace(groupedOperators[i]) {
-	// 	// case filter.Eq:
-	// 	case "eq":
-	// 		fmt.Printf("\neq Func: type is %T\n", eq)
-	// 		strView, err := sortedCsvDF.StringView(cName)
-	// 		if err != nil {
-	// 			fmt.Printf("\nsortedCsvDF.StringView(%v) err: %v\n", cName, err)
-	// 		}
-	// 		fmt.Printf("\nsortedCsvDF.StringView(%v):\n", cName)
-	// 		dump.V(strView)
-	// 		dump.V(strView.View)
-	// 		// dump.V(*strView.View.ItemAt(1))
-
-	// 		for i := 0; i < sortedCsvDF.Len(); i++ {
-	// 			dump.V(*strView.View.ItemAt(i))
-
-	// 			if strutil.Equal(*strView.View.ItemAt(i), anyStringValue) {
-	// 				temp++
-	// 			}
-	// 		}
-	// 		fmt.Printf("\nColumn: %v, sortedCsvDF.Len(): %v, count of *: %v\n", cName, sortedCsvDF.Len(), temp)
-	// 		// if temp == sortedCsvDF.Len() {
-	// 		// 	groupedFieldValuesFromMsg[i] = anyStringValue
-	// 		// }
-
-	// 		filterClauses[i] = eq(cName, groupedFieldValuesFromMsg[i])
-	// 	case "after_date":
-	// 		fmt.Printf("\nafter_date Func: type is %T\n", after_date)
-	// 		filterClauses[i] = after_date(cName, groupedFieldValuesFromMsg[i])
-	// 	}
-	// }
-	//
-
-	// three := 3
-	// fmt.Println("\nfilterClauses[0:3]:")
-	// dump.V(filterClauses[0:three])
-	// filteredCsvDF := sortedCsvDF.Filter(
-	// 	qframe.And(
-	// 		filterClauses[0:3]...,
-	// 	),
-	// )
-	// fmt.Println("\nfilteredCsvDF:")
-	// fmt.Println(filteredCsvDF)
-
-	// fmt.Println("\nfilterClauses[3:]:")
-	// dump.V(filterClauses[3:])
-	// filteredCsvDF = sortedCsvDF.Filter(
-	// 	qframe.And(
-	// 		filterClauses[3:]...,
-	// 	),
-	// )
-
-	//
-	// fmt.Printf("filterClauses: %#v\n", filterClauses)
-	// fmt.Println("\nfilterClauses:")
-	// dump.V(filterClauses)
-
-	// filteredCsvDF := sortedCsvDF.Filter(
-	// 	qframe.And(
-	// 		// filterClauses[0:3]...,
-	// 		filterClauses...,
-	// 	),
-	// )
-
-	// fmt.Println("\nfilteredCsvDF:")
-	// fmt.Println(filteredCsvDF)
-	//
 
 	fmt.Printf("\nfinal filteredCsvDF:\n")
 	fmt.Println(filteredCsvDF)
@@ -367,6 +277,47 @@ func compositeExpression(params ...any) (bool, error) {
 	fmt.Printf("filter condition group expression result: %v\n\n", result)
 	return result, nil
 	// return false, nil
+}
+
+func getFilterClause(df qframe.QFrame,
+	cName, groupedOperator, groupedFieldValueFromMsg string) (filterClause qframe.FilterClause) {
+	// switch groupedOperator {
+	switch strings.TrimSpace(groupedOperator) {
+	// case filter.Eq:
+	case "eq":
+		fmt.Printf("\neq Func: type is %T\n", eq)
+
+		fmt.Printf("\nfilteredCsvDF.Select(%v).Distinct():\n", cName)
+		distinctFilteredCsvDF := dataframe.Select(cName).Distinct()
+		fmt.Println(distinctFilteredCsvDF)
+
+		asteriskFilteredCsvDF := distinctFilteredCsvDF.Filter(
+			eq(cName, asteriskStringValue),
+		)
+		fmt.Println("\nasteriskFilteredCsvDF:")
+		fmt.Println(asteriskFilteredCsvDF)
+
+		nullFilteredCsvDF := distinctFilteredCsvDF.Filter(
+			eq(cName, nullStringValue),
+		)
+		fmt.Println("\nnullFilteredCsvDF:")
+		fmt.Println(nullFilteredCsvDF)
+
+		//TODO: handle all other possible values than '*' and 'null', may need looping based lookup
+		if groupedFieldValueFromMsg != nullStringValue {
+			if asteriskFilteredCsvDF.Len()+nullFilteredCsvDF.Len() == distinctFilteredCsvDF.Len() {
+				groupedFieldValueFromMsg = asteriskStringValue
+			}
+		} else {
+
+		}
+
+		filterClause = eq(cName, groupedFieldValueFromMsg)
+	case "after_date":
+		fmt.Printf("\nafter_date Func: type is %T\n", after_date)
+		filterClause = after_date(cName, groupedFieldValueFromMsg)
+	}
+	return filterClause
 }
 
 // func createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig []string) *qframe.QFrame {
@@ -383,6 +334,7 @@ func createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig []string) q
 	fmt.Println("\ncsvData:")
 	dump.V(csvData)
 
+	//TODO: handle other data types than string
 	// colNames := strings.Split(fieldNames, ",")
 	colTypes := make(map[string]string, len(groupedFieldNames))
 	for _, colName := range groupedFieldNames {
