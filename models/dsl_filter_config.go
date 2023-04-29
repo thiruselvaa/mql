@@ -252,21 +252,21 @@ func compositeExpression(params ...any) (bool, error) {
 
 			fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
 			fmt.Println(filteredCsvDF)
-		}
-
-		if filteredCsvDF.Len() == 0 {
-			break
 		} else {
-			cName := filteredCsvDF.ColumnNames()[i]
-			filterClause = getFilterClause(filteredCsvDF, cName, groupedOperator, groupedFieldValueFromMsg)
+			if filteredCsvDF.Len() == 0 {
+				break
+			} else {
+				cName := filteredCsvDF.ColumnNames()[i]
+				filterClause = getFilterClause(filteredCsvDF, cName, groupedOperator, groupedFieldValueFromMsg)
 
-			fmt.Printf("\nfilterClause[%v]:\n", i)
-			dump.V(filterClause)
+				fmt.Printf("\nfilterClause[%v]:\n", i)
+				dump.V(filterClause)
 
-			filteredCsvDF = filteredCsvDF.Filter(filterClause)
+				filteredCsvDF = filteredCsvDF.Filter(filterClause)
 
-			fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
-			fmt.Println(filteredCsvDF)
+				fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
+				fmt.Println(filteredCsvDF)
+			}
 		}
 	}
 
