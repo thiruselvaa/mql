@@ -134,7 +134,7 @@ func (e BooleanExpression) String() string {
 
 		return fmt.Sprintf(
 			"groupExpression(%v, %v, %v, %v)",
-			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, '[, 100, null, 1]', #.effectiveDate.string]",
+			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, '[, 123, null, 1]', #.effectiveDate.string]",
 			formatAnyArrToString(strings.Split(e.FieldPath, ",")),
 			formatAnyArrToString(strings.Split(e.Operator, ",")),
 			e.getValueAsString(),
@@ -257,7 +257,25 @@ func compositeExpression(params ...any) (bool, error) {
 				break
 			} else {
 				cName := filteredCsvDF.ColumnNames()[i]
+				if strings.Contains(cName, "[:]") {
+					fmt.Printf("\nColumnName[%v]:\n", cName)
+					if strings.HasPrefix(groupedFieldValueFromMsg, "[") {
+						str := strings.ReplaceAll(groupedFieldValueFromMsg, "[", "")
+						str = strings.ReplaceAll(str, "]", "")
+
+						strs := strings.Split(str, ",")
+						fmt.Printf("\nElements:%#v:\n", strs)
+						filterClauses := make([]qframe.FilterClause, len(str))
+						for idx, s := range strs {
+							filterClauses[idx] = getFilterClause(filteredCsvDF, cName, groupedOperator, strings.TrimSpace(s))
+						}
+						fmt.Printf("\nArray filterClauses[%v]:\n", i)
+						fmt.Println(filterClauses)
+					}
+				}
+				// } else {
 				filterClause = getFilterClause(filteredCsvDF, cName, groupedOperator, groupedFieldValueFromMsg)
+				// }
 
 				fmt.Printf("\nfilterClause[%v]:\n", i)
 				dump.V(filterClause)
@@ -303,13 +321,12 @@ func getFilterClause(df qframe.QFrame,
 		fmt.Println("\nnullFilteredCsvDF:")
 		fmt.Println(nullFilteredCsvDF)
 
-		//TODO: handle all other possible values than '*' and 'null', may need looping based lookup
 		if groupedFieldValueFromMsg != nullStringValue {
 			if asteriskFilteredCsvDF.Len()+nullFilteredCsvDF.Len() == distinctFilteredCsvDF.Len() {
 				groupedFieldValueFromMsg = asteriskStringValue
 			}
 		} else {
-
+			//TODO: handle all other possible values than '*' and 'null', may need looping based lookup
 		}
 
 		filterClause = eq(cName, groupedFieldValueFromMsg)

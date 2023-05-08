@@ -30,7 +30,7 @@ var (
 			"active": true,
 			"hContractId": 
 			{
-				"string": "H2226"
+				"string": "H0001"
 			},
 			"packageBenefitPlanCode": {
 				"string": "001"
@@ -40,26 +40,20 @@ var (
 			},
 			"membershipGroupData": {
 				"array": [
-				  {
-					"groupNumber": {
-						"string": ""
-					}
-				  },
-				  {
-					"groupNumber": {
-						"string": "100"
-					}
-				  }
+					{
+						"groupNumber": null
+				  	}
 				]
 			},
 			"effectiveDate": {
 				"string": "2022-12-31"
 			}
-		  },{
+		  },
+		  {
 			"active": true,
 			"hContractId": 
 			{
-				"string": "H2227"
+				"string": "H0002"
 			},
 			"packageBenefitPlanCode": {
 				"string": "001"
@@ -69,13 +63,36 @@ var (
 			},
 			"membershipGroupData": {
 				"array": [
-				  {
-				  },
-				  {
-					"groupNumber": {
-						"string": "1"
-					}
-				  }
+					{
+						"groupNumber": {
+							"string": null
+						}
+				  	}
+				]
+			},
+			"effectiveDate": {
+				"string": "2022-12-31"
+			}
+		  },
+		  {
+			"active": true,
+			"hContractId": 
+			{
+				"string": "H0003"
+			},
+			"packageBenefitPlanCode": {
+				"string": "001"
+			},
+			"segmentId": {
+				"string": "null"
+			},
+			"membershipGroupData": {
+				"array": [
+					{
+						"groupNumber": {
+							"string": "1"
+						}
+				  	}
 				]
 			},
 			"effectiveDate": {
@@ -515,6 +532,29 @@ func Test_mql(t *testing.T) {
 				// // //expression: smfConfig.Filter.Condition.String(),
 				//thiru
 				expression: smfConfig.Filter.Condition.String(),
+				// expression: `
+				// 	(
+				// 		(
+				// 			(
+				// 				any(
+				// 					message.memberships.array[:],
+				// 					(
+				// 						(
+				// 							(
+				// 								groupExpression(
+				// 									[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, '[, 100, null, 1]', #.effectiveDate.string],
+				// 									['hContractId','packageBenefitPlanCode','segmentId','groupNumber','effectiveDate'],
+				// 									['eq',' eq',' eq',' eq',' after_date'],
+				// 									['H2226,001,null,123,2020-12-31','H2225,002,null,*,2020-12-31']
+				// 								)
+				// 							)
+				// 						)
+				// 					)
+				// 				)
+				// 			)
+				// 		)
+				// 	)
+				// `,
 
 				// expression: whereString(smfConfig),
 				// expression: "true",

@@ -7,18 +7,6 @@ import (
 	"github.com/thiruselvaa/mql/models"
 )
 
-type Tweet struct {
-	Len int
-}
-
-type Env struct {
-	Tweets []Tweet
-}
-
-// var group_expression = func() bool {
-
-// }
-
 func main() {
 	// // configFile := "configs/native-filter-query.json"
 	// configFile := "configs/native-filter-query.yaml"

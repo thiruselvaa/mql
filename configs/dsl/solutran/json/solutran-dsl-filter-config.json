@@ -13,8 +13,10 @@
                   "field_path": "#.hContractId.string,#.packageBenefitPlanCode.string,#.segmentId.string,#.membershipGroupData.array[:].groupNumber.string,#.effectiveDate.string",
                   "operator": "eq, eq, eq, eq, after_date",
                   "value": [
-                    "H2226,001,null,*,2020-12-31",
-                    "H2225,002,null,*,2020-12-31"
+                    "H0001,001,null,*,2020-12-31",
+                    "H0002,002,null,*,2021-12-31",
+                    "H0003,003,null,1,2021-12-31",
+                    "H0004,004,null,*,2021-12-31"
                   ]
                 }
               ]
