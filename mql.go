@@ -40,7 +40,7 @@ func main() {
 
 func mql(expression string, env interface{}) (interface{}, error) {
 
-	program, err := expr.Compile(expression, models.GroupExpression)
+	program, err := expr.Compile(expression, models.GroupExpressionFunc, models.FlattenFunc, models.SliceToStringsFunc)
 	if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,51 @@ const (
 	nullStringValue     = "null"
 )
 
-var GroupExpression = expr.Function(
+var FlattenFunc = expr.Function(
+	"flatten",
+	func(params ...any) (any, error) {
+		return Flatten(params...)
+	},
+	new(func([]interface{}) []interface{}),
+)
+
+// Flatten will take an array of nested array and return
+// all nested elements in an array. e.g. [[1,2,[3]],4] -> [1,2,3,4]
+// func Flatten(nested ...any) ([]interface{}, error) {
+// 	// This function is failing with stack overflow due to recursion - use at own risk
+// 	// TODO: handle error
+// 	flattened := make([]interface{}, 0)
+
+// 	for _, i := range nested {
+// 		switch i := i.(type) {
+// 		case []interface{}:
+// 			flattenedSubArray, _ := Flatten(i)
+// 			flattened = append(flattened, flattenedSubArray...)
+// 		case interface{}:
+// 			flattened = append(flattened, i)
+// 		}
+// 	}
+
+// 	return flattened, nil
+// }
+
+func Flatten(nested ...any) (any, error) {
+	return funk.FlattenDeep(nested), nil
+}
+
+var SliceToStringsFunc = expr.Function(
+	"sliceToStrings",
+	func(params ...any) (any, error) {
+		return SliceToStrings(params...)
+	},
+	new(func([]interface{}) []interface{}),
+)
+
+func SliceToStrings(nested ...any) ([]string, error) {
+	return arrutil.SliceToStrings(nested), nil
+}
+
+var GroupExpressionFunc = expr.Function(
 	"groupExpression",
 	func(params ...any) (any, error) {
 		return compositeExpression(params...)
@@ -133,9 +177,12 @@ func (e BooleanExpression) String() string {
 		}
 		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, #.membershipGroupData.array[:].groupNumber.string, #.effectiveDate.string]",
 		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map(#?.membershipGroupData?.array??[],.groupNumber?.string??nil), #.effectiveDate.string]",
+		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, #?.membershipGroupData?.array!=nil??map(#?.membershipGroupData?.array??[],.groupNumber?.string), #.effectiveDate.string]",
+		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map( filter(#?.membershipGroupData?.array[:], len(#?.membershipGroupData?.array??[]) > 0), .groupNumber?.string??nil), #.effectiveDate.string]",
+
 		return fmt.Sprintf(
 			"groupExpression(%v, %v, %v, %v)",
-			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, #?.membershipGroupData?.array!=nil??map(#?.membershipGroupData?.array??[],.groupNumber?.string??nil), #.effectiveDate.string]",
+			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map(filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??['']) > 0), .groupNumber?.string), #.effectiveDate.string]",
 			formatAnyArrToString(strings.Split(e.FieldPath, ",")),
 			formatAnyArrToString(strings.Split(e.Operator, ",")),
 			e.getValueAsString(),

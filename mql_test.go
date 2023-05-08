@@ -41,7 +41,9 @@ var (
 			"membershipGroupData": {
 				"array": [
 					{
-						"groupNumber": null
+						"groupNumber": {
+							"string": "1"
+						}
 				  	}
 				]
 			},
@@ -59,7 +61,7 @@ var (
 				"string": "001"
 			},
 			"segmentId": {
-				"string": "null"
+				"string": "2"
 			},
 			"effectiveDate": {
 				"string": "2022-12-31"
@@ -522,7 +524,7 @@ func Test_mql(t *testing.T) {
 				// `,
 
 				// // //expression: smfConfig.Filter.Condition.String(),
-				//thiru
+				//thiru: app
 				expression: smfConfig.Filter.Condition.String(),
 				// expression: `
 				// 	(
@@ -739,6 +741,34 @@ func Test_mql(t *testing.T) {
 				// `,
 
 				// thiru: working
+				// map(filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??['']) > 0), .groupNumber?.string)
+				// expression: `
+				// map(
+				// 	message?.memberships?.array ?? [],
+				// 	flatten(
+				// 		map(
+				// 			filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??[""]) > 0),
+				// 			.groupNumber?.string
+				// 		)
+				// 	)[0]
+				// )
+				// `,
+
+				// expression: `
+				// map(
+				// 	message?.memberships?.array ?? [],
+				// 	sliceToStrings(
+				// 	flatten(
+				// 		map(
+				// 			filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??[""]) > 0),
+				// 			.groupNumber?.string
+				// 		)
+				// 	)[0]
+				// 	)
+				// )
+				// `,
+				//
+
 				//message.memberships.array[:].membershipGroupData.array[:].groupNumber.string
 				//map(message?.memberships?.array??[],map(#?.membershipGroupData?.array??[], .groupNumber?.string??nil))
 				// expression: `
@@ -1014,6 +1044,12 @@ func Test_mql(t *testing.T) {
 				flattenArr := Flatten(gotResult)
 				fmt.Printf("flattenArr := Flatten(gotResult.([]interface{})): type=%T, %#v\n\n", flattenArr, flattenArr)
 
+				// flattenArr := funk.Flatten(gotResult)
+				// fmt.Printf("flattenArr := Flatten(gotResult.([]interface{})): type=%T, %#v\n\n", flattenArr, flattenArr)
+
+				// flattenArr := flat.Flat(gotResult)
+				// fmt.Printf("flattenArr := flat.Flat(gotResult.([]interface{})): type=%T, %#v\n\n", flattenArr, flattenArr)
+
 				flattenArrStr := arrutil.AnyToString(flattenArr)
 				fmt.Printf("flattenArrStr := arrutil.AnyToString(flattenArr): type=%T, %#v\n\n", flattenArrStr, flattenArrStr)
 
@@ -1023,8 +1059,8 @@ func Test_mql(t *testing.T) {
 				flattenArrStrs := arrutil.AnyToStrings(flattenArr)
 				fmt.Printf("flattenArrStrs := arrutil.AnyToStrings(flattenArr): type=%T, %#v\n\n", flattenArrStrs, flattenArrStrs)
 
-				flattenSliceStrs := arrutil.SliceToStrings(flattenArr)
-				fmt.Printf("flattenSliceStrs := arrutil.SliceToStrings(flattenArr): type=%T, %#v\n\n", flattenSliceStrs, flattenSliceStrs)
+				// flattenSliceStrs := arrutil.SliceToStrings(flattenArr)
+				// fmt.Printf("flattenSliceStrs := arrutil.SliceToStrings(flattenArr): type=%T, %#v\n\n", flattenSliceStrs, flattenSliceStrs)
 
 				fmt.Printf("\narrutil.SliceToStrings(gotResult.([]interface{})): %#v\n\n",
 					arrutil.SliceToStrings(gotResult))
