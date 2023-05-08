@@ -131,10 +131,11 @@ func (e BooleanExpression) String() string {
 
 			fmt.Println(dataframe)
 		}
-
+		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, #.membershipGroupData.array[:].groupNumber.string, #.effectiveDate.string]",
+		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map(#?.membershipGroupData?.array??[],.groupNumber?.string??nil), #.effectiveDate.string]",
 		return fmt.Sprintf(
 			"groupExpression(%v, %v, %v, %v)",
-			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, '[, 123, null, 1]', #.effectiveDate.string]",
+			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, #?.membershipGroupData?.array!=nil??map(#?.membershipGroupData?.array??[],.groupNumber?.string??nil), #.effectiveDate.string]",
 			formatAnyArrToString(strings.Split(e.FieldPath, ",")),
 			formatAnyArrToString(strings.Split(e.Operator, ",")),
 			e.getValueAsString(),

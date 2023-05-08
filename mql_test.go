@@ -61,15 +61,6 @@ var (
 			"segmentId": {
 				"string": "null"
 			},
-			"membershipGroupData": {
-				"array": [
-					{
-						"groupNumber": {
-							"string": null
-						}
-				  	}
-				]
-			},
 			"effectiveDate": {
 				"string": "2022-12-31"
 			}
@@ -306,8 +297,9 @@ func Test_mql(t *testing.T) {
 				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in [int("0"), int("1"), int("2")]})`,
 				// expression: `all(message["security"]["com.optum.exts.eligibility.model.common.Security"]["securityPermissionInt"]["array"], {#["securityPermissionValue"]["int"] in [float("0"), float("1"), float("2")]})`,
 
+				//thiru
 				// expression: `filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0)`, //better option
-				// expression: `map(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0)`, //better option
+				// expression: `map(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int ?? .securityPermissionValue.int)`, //better option
 				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int))`,
 				// expression: `map(filter(message.security["com.optum.exts.eligibility.model.common.Security"].securityPermissionInt.array, .securityPermissionValue.int > 0), int(.securityPermissionValue.int)) == [1,2]`, //returns true
 
@@ -744,6 +736,13 @@ func Test_mql(t *testing.T) {
 				// 			.groupNumber?.string ?? "null"
 				// 		)
 				// 	)
+				// `,
+
+				// thiru: working
+				//message.memberships.array[:].membershipGroupData.array[:].groupNumber.string
+				//map(message?.memberships?.array??[],map(#?.membershipGroupData?.array??[], .groupNumber?.string??nil))
+				// expression: `
+				// 	map(message?.memberships?.array??[],map(#?.membershipGroupData?.array??[], .groupNumber?.string??nil))
 				// `,
 
 				//
