@@ -62,7 +62,7 @@ var SliceToStringsFunc = expr.Function(
 	func(params ...any) (any, error) {
 		return SliceToStrings(params...)
 	},
-	new(func([]interface{}) []interface{}),
+	new(func([]interface{}) interface{}),
 )
 
 func SliceToStrings(nested ...any) ([]string, error) {
@@ -190,10 +190,10 @@ func (e BooleanExpression) String() string {
 
 		return fmt.Sprintf(
 			"groupedExpression(%v, %v, %v, %v)",
-			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, sliceToStrings(map(filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??['']) > 0), .groupNumber?.string)), #.effectiveDate.string]",
 			formatAnyArrToString(strings.Split(e.FieldPath, ",")),
 			formatAnyArrToString(strings.Split(e.Operator, ",")),
 			e.getValueAsString(),
+			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map(filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??['']) > 0), .groupNumber?.string), #.effectiveDate.string]",
 		)
 
 		//below not-working due to groupNumber being inside array
@@ -260,104 +260,143 @@ func groupedExpression(params ...any) (result bool, err error) {
 	fmt.Println("\nparams:")
 	dump.V(params)
 
-	fmt.Println("\nparams[0]:")
-	dump.V(params[0])
-
-	groupedFieldValuesFromMsg := arrutil.AnyToStrings(params[0])
-	fmt.Println("\ngroupedFieldValuesFromMsg:")
-	dump.V(groupedFieldValuesFromMsg)
-
-	// //TODO: start - initialize the below values only once and not for every message processing
-	// // Thats because these values are coming from config and expected to not change for every message
-	// groupedFieldNames := arrutil.AnyToStrings(params[1])
+	//TODO: start - initialize the below values only once and not for every message processing
+	// Thats because these values are coming from config and expected to not change for every message
+	groupedFieldNames := arrutil.AnyToStrings(params[0])
 	// fmt.Println("\ngroupedFieldNames:")
 	// dump.V(groupedFieldNames)
 
-	// groupedOperators := arrutil.AnyToStrings(params[2])
+	groupedOperators := arrutil.AnyToStrings(params[1])
 	// fmt.Println("\ngroupedOperators:")
 	// dump.V(groupedOperators)
 
-	// groupedFieldValuesFromConfig := arrutil.AnyToStrings(params[3])
+	groupedFieldValuesFromConfig := arrutil.AnyToStrings(params[2])
 	// fmt.Println("\ngroupedFieldValuesFromConfig:")
 	// dump.V(groupedFieldValuesFromConfig)
-	// //TODO: end
+	//TODO: end
 
-	// // groupedFieldValueElements := strings.Split(groupedFieldValues[0], ",")
-	// // if !(len(groupedFieldNames) == len(groupedOperators) &&
-	// // 	len(groupedFieldNames) == len(groupedFieldValueElements)) {
-	// // 	res := "should have same number of field(len=%v), operator(len=%v) and value(len=%v) in group expression"
-	// // 	return fmt.Sprintf(res, len(groupedFieldNames), len(groupedOperators), len(groupedFieldValueElements))
-	// // }
+	//TODO: avoid using dataframe global variables and instead use struct variables
+	if funk.IsEmpty(dataframe) {
+		fmt.Println("\ndataframe:")
 
-	// //TODO: avoid using dataframe global variables and instead use struct variables
-	// if funk.IsEmpty(dataframe) {
-	// 	fmt.Println("\ndataframe:")
+		dataframe = createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig)
 
-	// 	dataframe = createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig)
+		fmt.Println(dataframe)
+	}
 
-	// 	fmt.Println(dataframe)
-	// }
+	groupedFieldValuesFromMsg := make([]string, len(groupedOperators))
 
-	// var filteredCsvDF qframe.QFrame
-	// var filterClause qframe.FilterClause
-	// for i := 0; i < len(groupedOperators); i++ {
-	// 	groupedFieldValueFromMsg := groupedFieldValuesFromMsg[i]
-	// 	groupedOperator := groupedOperators[i]
+	rawGroupedFieldValuesFromMsg := params[3]
+	fmt.Println("\nrawGroupedFieldValuesFromMsg:")
+	dump.V(rawGroupedFieldValuesFromMsg)
 
-	// 	if i == 0 {
-	// 		cName := dataframe.ColumnNames()[i]
-	// 		filterClause = getFilterClause(dataframe, cName, groupedOperator, groupedFieldValueFromMsg)
+	var (
+		arrLen int
+		arrEle interface{}
+		sb     strings.Builder
+	)
+	switch iv := rawGroupedFieldValuesFromMsg.(type) {
+	case []interface{}:
+		for arrLen, arrEle = range iv {
+			// fmt.Printf("message value[%v] %v\n", i, e)
+			switch v := arrEle.(type) {
+			case string:
+				fmt.Printf("%T type of message value[%v] %v\n", v, arrLen, v)
+				groupedFieldValuesFromMsg[arrLen] = v
+			case []interface{}:
+				fmt.Printf("%T type of message value[%v] %v\n", v, arrLen, v)
+				for idx, ival := range v {
+					switch val := ival.(type) {
+					case string:
+						fmt.Printf("\t%T type of message value[%v] %v\n", val, idx, val)
+						if idx != 0 {
+							sb.WriteString("^")
+						}
+						sb.WriteString(val)
+					default:
+						return false, fmt.Errorf("array of array: unsupported data type: %T for message element: %v", arrEle, arrEle)
+					}
+				}
+				if len(sb.String()) == 0 {
+					sb.WriteString("null")
+				}
+				groupedFieldValuesFromMsg[arrLen] = sb.String()
+			default:
+				return false, fmt.Errorf("unsupported data type: %T for message element: %v", arrEle, arrEle)
+			}
+		}
+	default:
+		return false, fmt.Errorf("unsupported data type: %T for message element: %v", iv, iv)
+	}
 
-	// 		fmt.Printf("\nfilterClause[%v]:\n", i)
-	// 		dump.V(filterClause)
+	fmt.Printf("\ngroupedFieldValuesFromMsg: %v\n", groupedFieldValuesFromMsg)
+	dump.V(groupedFieldValuesFromMsg)
 
-	// 		filteredCsvDF = dataframe.Filter(filterClause)
+	result = evaluate(groupedFieldValuesFromMsg, groupedOperators)
 
-	// 		fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
-	// 		fmt.Println(filteredCsvDF)
-	// 	} else {
-	// 		if filteredCsvDF.Len() == 0 {
-	// 			break
-	// 		} else {
-	// 			cName := filteredCsvDF.ColumnNames()[i]
-	// 			if strings.Contains(cName, "[:]") {
-	// 				fmt.Printf("\nColumnName[%v]:\n", cName)
-	// 				if strings.HasPrefix(groupedFieldValueFromMsg, "[") {
-	// 					str := strings.ReplaceAll(groupedFieldValueFromMsg, "[", "")
-	// 					str = strings.ReplaceAll(str, "]", "")
-
-	// 					strs := strings.Split(str, ",")
-	// 					fmt.Printf("\nElements:%#v:\n", strs)
-	// 					filterClauses := make([]qframe.FilterClause, len(str))
-	// 					for idx, s := range strs {
-	// 						filterClauses[idx] = getFilterClause(filteredCsvDF, cName, groupedOperator, strings.TrimSpace(s))
-	// 					}
-	// 					fmt.Printf("\nArray filterClauses[%v]:\n", i)
-	// 					fmt.Println(filterClauses)
-	// 				}
-	// 			}
-	// 			// } else {
-	// 			filterClause = getFilterClause(filteredCsvDF, cName, groupedOperator, groupedFieldValueFromMsg)
-	// 			// }
-
-	// 			fmt.Printf("\nfilterClause[%v]:\n", i)
-	// 			dump.V(filterClause)
-
-	// 			filteredCsvDF = filteredCsvDF.Filter(filterClause)
-
-	// 			fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
-	// 			fmt.Println(filteredCsvDF)
-	// 		}
-	// 	}
-	// }
-
-	// fmt.Printf("\nfinal filteredCsvDF:\n")
-	// fmt.Println(filteredCsvDF)
-
-	// result := filteredCsvDF.Len() > 0
-	// fmt.Printf("filter condition group expression result: %v\n\n", result)
 	return result, nil
-	// return false, nil
+}
+
+func evaluate(groupedFieldValuesFromMsg []string, groupedOperators []string) (result bool) {
+	var filteredCsvDF qframe.QFrame
+	var filterClause qframe.FilterClause
+	for i := 0; i < len(groupedOperators); i++ {
+		groupedFieldValueFromMsg := groupedFieldValuesFromMsg[i]
+		groupedOperator := groupedOperators[i]
+
+		if i == 0 {
+			cName := dataframe.ColumnNames()[i]
+			filterClause = getFilterClause(dataframe, cName, groupedOperator, groupedFieldValueFromMsg)
+
+			fmt.Printf("\nfilterClause[%v]:\n", i)
+			dump.V(filterClause)
+
+			filteredCsvDF = dataframe.Filter(filterClause)
+
+			fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
+			fmt.Println(filteredCsvDF)
+		} else {
+			if filteredCsvDF.Len() == 0 {
+				break
+			} else {
+				cName := filteredCsvDF.ColumnNames()[i]
+				if strings.Contains(cName, "[:]") {
+					fmt.Printf("\nColumnName[%v]:\n", cName)
+					if strings.HasPrefix(groupedFieldValueFromMsg, "[") {
+						str := strings.ReplaceAll(groupedFieldValueFromMsg, "[", "")
+						str = strings.ReplaceAll(str, "]", "")
+
+						strs := strings.Split(str, ",")
+						fmt.Printf("\nElements:%#v:\n", strs)
+						filterClauses := make([]qframe.FilterClause, len(str))
+						for idx, s := range strs {
+							filterClauses[idx] = getFilterClause(filteredCsvDF, cName, groupedOperator, strings.TrimSpace(s))
+						}
+						fmt.Printf("\nArray filterClauses[%v]:\n", i)
+						fmt.Println(filterClauses)
+					}
+				}
+
+				filterClause = getFilterClause(filteredCsvDF, cName, groupedOperator, groupedFieldValueFromMsg)
+
+				fmt.Printf("\nfilterClause[%v]:\n", i)
+				dump.V(filterClause)
+
+				filteredCsvDF = filteredCsvDF.Filter(filterClause)
+
+				fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
+				fmt.Println(filteredCsvDF)
+			}
+		}
+	}
+
+	fmt.Printf("\nfinal filteredCsvDF:\n")
+	fmt.Println(filteredCsvDF)
+
+	result = filteredCsvDF.Len() > 0
+	fmt.Printf("filter condition group expression result: %v\n\n", result)
+
+	return result
 }
 
 func getFilterClause(df qframe.QFrame,
