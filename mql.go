@@ -38,9 +38,8 @@ func main() {
 	// dump.V(string(value))
 }
 
-func mql(expression string, env interface{}) (interface{}, error) {
-
-	program, err := expr.Compile(expression, models.GroupExpressionFunc, models.FlattenFunc, models.SliceToStringsFunc)
+func mql(expression string, env interface{}) (result interface{}, err error) {
+	program, err := expr.Compile(expression, models.GroupedExpressionFunc, models.FlattenFunc, models.SliceToStringsFunc)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +58,7 @@ func mql(expression string, env interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("misused expr.Eval: second argument (env) should be passed without expr.Env")
 	}
 
-	result, err := expr.Run(program, env)
+	result, err = expr.Run(program, env)
 	if err != nil {
 		return nil, err
 	}

@@ -83,7 +83,7 @@ var (
 				"array": [
 					{
 						"groupNumber": {
-							"string": "1"
+							"string": "null"
 						}
 				  	}
 				]
@@ -536,7 +536,7 @@ func Test_mql(t *testing.T) {
 				// 						(
 				// 							(
 				// 								groupExpression(
-				// 									[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, '[, 100, null, 1]', #.effectiveDate.string],
+				// 									[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map(filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??[""]) > 0), .groupNumber?.string), #.effectiveDate.string],
 				// 									['hContractId','packageBenefitPlanCode','segmentId','groupNumber','effectiveDate'],
 				// 									['eq',' eq',' eq',' eq',' after_date'],
 				// 									['H2226,001,null,123,2020-12-31','H2225,002,null,*,2020-12-31']
@@ -549,6 +549,7 @@ func Test_mql(t *testing.T) {
 				// 		)
 				// 	)
 				// `,
+				//
 
 				// expression: whereString(smfConfig),
 				// expression: "true",
@@ -752,6 +753,21 @@ func Test_mql(t *testing.T) {
 				// 		)
 				// 	)[0]
 				// )
+				// `,
+
+				// thiru
+				// expression: `
+				// 	message?.memberships?.array[0]?.membershipGroupData?.array[0]?.groupNumber?.string
+				// `,
+
+				// expression: `
+				// 	map(
+				// 		message?.memberships?.array ?? [],
+				// 		map(
+				// 			#?.membershipGroupData?.array ?? [],
+				// 			.groupNumber?.string ?? "null"
+				// 		)
+				// 	)
 				// `,
 
 				// expression: `
@@ -1030,6 +1046,7 @@ func Test_mql(t *testing.T) {
 			}
 
 			// fmt.Printf("SMF Config: %v", smfConfig)
+			fmt.Printf("\nResult: type(%T) value(%v)\n", gotResult, gotResult)
 
 			var value []byte
 			value, err = jsonutil.EncodePretty(gotResult)

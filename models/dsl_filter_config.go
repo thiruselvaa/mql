@@ -29,6 +29,7 @@ var FlattenFunc = expr.Function(
 		return Flatten(params...)
 	},
 	new(func([]interface{}) []interface{}),
+	// new(func([]interface{}) bool),
 )
 
 // Flatten will take an array of nested array and return
@@ -52,6 +53,7 @@ var FlattenFunc = expr.Function(
 // }
 
 func Flatten(nested ...any) (any, error) {
+	dump.V(nested...)
 	return funk.FlattenDeep(nested), nil
 }
 
@@ -67,10 +69,10 @@ func SliceToStrings(nested ...any) ([]string, error) {
 	return arrutil.SliceToStrings(nested), nil
 }
 
-var GroupExpressionFunc = expr.Function(
-	"groupExpression",
+var GroupedExpressionFunc = expr.Function(
+	"groupedExpression",
 	func(params ...any) (any, error) {
-		return compositeExpression(params...)
+		return groupedExpression(params...)
 	},
 	new(func([]interface{}, []interface{}, []interface{}, []interface{}) bool),
 )
@@ -179,10 +181,16 @@ func (e BooleanExpression) String() string {
 		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map(#?.membershipGroupData?.array??[],.groupNumber?.string??nil), #.effectiveDate.string]",
 		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, #?.membershipGroupData?.array!=nil??map(#?.membershipGroupData?.array??[],.groupNumber?.string), #.effectiveDate.string]",
 		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map( filter(#?.membershipGroupData?.array[:], len(#?.membershipGroupData?.array??[]) > 0), .groupNumber?.string??nil), #.effectiveDate.string]",
+		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map(filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??['']) > 0), .groupNumber?.string), #.effectiveDate.string]",
+		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, #?.membershipGroupData != nil && (#?.membershipGroupData?.array[0].groupNumber?.string ?? 'null'), #.effectiveDate.string]",
+		// "[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, len(#?.membershipGroupData?.array ?? []), #.effectiveDate.string]",
+
+		// exp := "#?.membershipGroupData != nil && (#?.membershipGroupData?.array[0].groupNumber?.string ?? 'null')"
+		// env := ValueJsonMap
 
 		return fmt.Sprintf(
-			"groupExpression(%v, %v, %v, %v)",
-			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, map(filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??['']) > 0), .groupNumber?.string), #.effectiveDate.string]",
+			"groupedExpression(%v, %v, %v, %v)",
+			"[#.hContractId.string, #.packageBenefitPlanCode.string,  #.segmentId.string, sliceToStrings(map(filter(#?.membershipGroupData?.array??[], len(#?.membershipGroupData?.array??['']) > 0), .groupNumber?.string)), #.effectiveDate.string]",
 			formatAnyArrToString(strings.Split(e.FieldPath, ",")),
 			formatAnyArrToString(strings.Split(e.Operator, ",")),
 			e.getValueAsString(),
@@ -246,101 +254,108 @@ func formatAnyArrToString(arr any) string {
 }
 
 // arrutil.AnyToStrings(params[0])
-// func compositeExpression(groupedFieldValuesFromMsg, groupedOperators, groupedFieldValuesFromConfig []string) (bool, error) {
-func compositeExpression(params ...any) (bool, error) {
+// func groupedExpression(groupedFieldValuesFromMsg, groupedOperators, groupedFieldValuesFromConfig []string) (bool, error) {
+func groupedExpression(params ...any) (result bool, err error) {
+
+	fmt.Println("\nparams:")
+	dump.V(params)
+
+	fmt.Println("\nparams[0]:")
+	dump.V(params[0])
+
 	groupedFieldValuesFromMsg := arrutil.AnyToStrings(params[0])
 	fmt.Println("\ngroupedFieldValuesFromMsg:")
 	dump.V(groupedFieldValuesFromMsg)
 
-	//TODO: start - initialize the below values only once and not for every message processing
-	// Thats because these values are coming from config and expected to not change for every message
-	groupedFieldNames := arrutil.AnyToStrings(params[1])
-	fmt.Println("\ngroupedFieldNames:")
-	dump.V(groupedFieldNames)
+	// //TODO: start - initialize the below values only once and not for every message processing
+	// // Thats because these values are coming from config and expected to not change for every message
+	// groupedFieldNames := arrutil.AnyToStrings(params[1])
+	// fmt.Println("\ngroupedFieldNames:")
+	// dump.V(groupedFieldNames)
 
-	groupedOperators := arrutil.AnyToStrings(params[2])
-	fmt.Println("\ngroupedOperators:")
-	dump.V(groupedOperators)
+	// groupedOperators := arrutil.AnyToStrings(params[2])
+	// fmt.Println("\ngroupedOperators:")
+	// dump.V(groupedOperators)
 
-	groupedFieldValuesFromConfig := arrutil.AnyToStrings(params[3])
-	fmt.Println("\ngroupedFieldValuesFromConfig:")
-	dump.V(groupedFieldValuesFromConfig)
-	//TODO: end
+	// groupedFieldValuesFromConfig := arrutil.AnyToStrings(params[3])
+	// fmt.Println("\ngroupedFieldValuesFromConfig:")
+	// dump.V(groupedFieldValuesFromConfig)
+	// //TODO: end
 
-	// groupedFieldValueElements := strings.Split(groupedFieldValues[0], ",")
-	// if !(len(groupedFieldNames) == len(groupedOperators) &&
-	// 	len(groupedFieldNames) == len(groupedFieldValueElements)) {
-	// 	res := "should have same number of field(len=%v), operator(len=%v) and value(len=%v) in group expression"
-	// 	return fmt.Sprintf(res, len(groupedFieldNames), len(groupedOperators), len(groupedFieldValueElements))
+	// // groupedFieldValueElements := strings.Split(groupedFieldValues[0], ",")
+	// // if !(len(groupedFieldNames) == len(groupedOperators) &&
+	// // 	len(groupedFieldNames) == len(groupedFieldValueElements)) {
+	// // 	res := "should have same number of field(len=%v), operator(len=%v) and value(len=%v) in group expression"
+	// // 	return fmt.Sprintf(res, len(groupedFieldNames), len(groupedOperators), len(groupedFieldValueElements))
+	// // }
+
+	// //TODO: avoid using dataframe global variables and instead use struct variables
+	// if funk.IsEmpty(dataframe) {
+	// 	fmt.Println("\ndataframe:")
+
+	// 	dataframe = createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig)
+
+	// 	fmt.Println(dataframe)
 	// }
 
-	//TODO: avoid using dataframe global variables and instead use struct variables
-	if funk.IsEmpty(dataframe) {
-		fmt.Println("\ndataframe:")
+	// var filteredCsvDF qframe.QFrame
+	// var filterClause qframe.FilterClause
+	// for i := 0; i < len(groupedOperators); i++ {
+	// 	groupedFieldValueFromMsg := groupedFieldValuesFromMsg[i]
+	// 	groupedOperator := groupedOperators[i]
 
-		dataframe = createDataFrame(groupedFieldNames, groupedFieldValuesFromConfig)
+	// 	if i == 0 {
+	// 		cName := dataframe.ColumnNames()[i]
+	// 		filterClause = getFilterClause(dataframe, cName, groupedOperator, groupedFieldValueFromMsg)
 
-		fmt.Println(dataframe)
-	}
+	// 		fmt.Printf("\nfilterClause[%v]:\n", i)
+	// 		dump.V(filterClause)
 
-	var filteredCsvDF qframe.QFrame
-	var filterClause qframe.FilterClause
-	for i := 0; i < len(groupedOperators); i++ {
-		groupedFieldValueFromMsg := groupedFieldValuesFromMsg[i]
-		groupedOperator := groupedOperators[i]
+	// 		filteredCsvDF = dataframe.Filter(filterClause)
 
-		if i == 0 {
-			cName := dataframe.ColumnNames()[i]
-			filterClause = getFilterClause(dataframe, cName, groupedOperator, groupedFieldValueFromMsg)
+	// 		fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
+	// 		fmt.Println(filteredCsvDF)
+	// 	} else {
+	// 		if filteredCsvDF.Len() == 0 {
+	// 			break
+	// 		} else {
+	// 			cName := filteredCsvDF.ColumnNames()[i]
+	// 			if strings.Contains(cName, "[:]") {
+	// 				fmt.Printf("\nColumnName[%v]:\n", cName)
+	// 				if strings.HasPrefix(groupedFieldValueFromMsg, "[") {
+	// 					str := strings.ReplaceAll(groupedFieldValueFromMsg, "[", "")
+	// 					str = strings.ReplaceAll(str, "]", "")
 
-			fmt.Printf("\nfilterClause[%v]:\n", i)
-			dump.V(filterClause)
+	// 					strs := strings.Split(str, ",")
+	// 					fmt.Printf("\nElements:%#v:\n", strs)
+	// 					filterClauses := make([]qframe.FilterClause, len(str))
+	// 					for idx, s := range strs {
+	// 						filterClauses[idx] = getFilterClause(filteredCsvDF, cName, groupedOperator, strings.TrimSpace(s))
+	// 					}
+	// 					fmt.Printf("\nArray filterClauses[%v]:\n", i)
+	// 					fmt.Println(filterClauses)
+	// 				}
+	// 			}
+	// 			// } else {
+	// 			filterClause = getFilterClause(filteredCsvDF, cName, groupedOperator, groupedFieldValueFromMsg)
+	// 			// }
 
-			filteredCsvDF = dataframe.Filter(filterClause)
+	// 			fmt.Printf("\nfilterClause[%v]:\n", i)
+	// 			dump.V(filterClause)
 
-			fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
-			fmt.Println(filteredCsvDF)
-		} else {
-			if filteredCsvDF.Len() == 0 {
-				break
-			} else {
-				cName := filteredCsvDF.ColumnNames()[i]
-				if strings.Contains(cName, "[:]") {
-					fmt.Printf("\nColumnName[%v]:\n", cName)
-					if strings.HasPrefix(groupedFieldValueFromMsg, "[") {
-						str := strings.ReplaceAll(groupedFieldValueFromMsg, "[", "")
-						str = strings.ReplaceAll(str, "]", "")
+	// 			filteredCsvDF = filteredCsvDF.Filter(filterClause)
 
-						strs := strings.Split(str, ",")
-						fmt.Printf("\nElements:%#v:\n", strs)
-						filterClauses := make([]qframe.FilterClause, len(str))
-						for idx, s := range strs {
-							filterClauses[idx] = getFilterClause(filteredCsvDF, cName, groupedOperator, strings.TrimSpace(s))
-						}
-						fmt.Printf("\nArray filterClauses[%v]:\n", i)
-						fmt.Println(filterClauses)
-					}
-				}
-				// } else {
-				filterClause = getFilterClause(filteredCsvDF, cName, groupedOperator, groupedFieldValueFromMsg)
-				// }
+	// 			fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
+	// 			fmt.Println(filteredCsvDF)
+	// 		}
+	// 	}
+	// }
 
-				fmt.Printf("\nfilterClause[%v]:\n", i)
-				dump.V(filterClause)
+	// fmt.Printf("\nfinal filteredCsvDF:\n")
+	// fmt.Println(filteredCsvDF)
 
-				filteredCsvDF = filteredCsvDF.Filter(filterClause)
-
-				fmt.Printf("\nfilteredCsvDF[%v]:\n", i)
-				fmt.Println(filteredCsvDF)
-			}
-		}
-	}
-
-	fmt.Printf("\nfinal filteredCsvDF:\n")
-	fmt.Println(filteredCsvDF)
-
-	result := filteredCsvDF.Len() > 0
-	fmt.Printf("filter condition group expression result: %v\n\n", result)
+	// result := filteredCsvDF.Len() > 0
+	// fmt.Printf("filter condition group expression result: %v\n\n", result)
 	return result, nil
 	// return false, nil
 }
