@@ -4,8 +4,14 @@ import (
 	"fmt"
 
 	"github.com/antonmedv/expr"
+	"github.com/gookit/goutil/dump"
 	"github.com/thiruselvaa/mql/models"
+	"github.com/thoas/go-funk"
 )
+
+type Message struct {
+	Data map[string]interface{} `expr:"message"`
+}
 
 func main() {
 	dslConfigFile := "configs/dsl/solutran/json/solutran-dsl-filter-config.json"
@@ -17,7 +23,9 @@ func main() {
 
 	//TODO: sample code
 	expression := smfConfig.Filter.Condition.String()
-	env := map[string]interface{}{}
+	env := Message{
+		Data: map[string]interface{}{},
+	}
 	result, err := mql(expression, env)
 	if err != nil {
 		fmt.Printf("error parsing the incoming message: %v", err)
@@ -36,9 +44,18 @@ func mql(expression string, env interface{}) (result interface{}, err error) {
 		return nil, fmt.Errorf("misused expr.Eval: second argument (env) should be passed without expr.Env")
 	}
 
-	result, err = expr.Run(program, env)
-	if err != nil {
-		return nil, err
+	dump.V(env)
+
+	switch e := env.(type) {
+	case Message:
+		if !funk.IsEmpty(e.Data) {
+			result, err = expr.Run(program, env)
+			if err != nil {
+				return nil, err
+			}
+		}
+	default:
+		return nil, fmt.Errorf("unsupported data type: %T for message format: %v", env, env)
 	}
 
 	return result, err

@@ -171,10 +171,6 @@ func Test_mql(t *testing.T) {
 	}
 	dump.V(valueJsonMap)
 
-	type Env struct {
-		Message map[string]interface{} `expr:"message"`
-	}
-
 	configFile := "configs/dsl/solutran/json/solutran-dsl-filter-config.json"
 	smfConfig, err := models.NewDSLFilterConfig(configFile)
 	if err != nil {
@@ -185,7 +181,7 @@ func Test_mql(t *testing.T) {
 
 	type args struct {
 		expression string
-		env        Env
+		env        Message
 	}
 	tests := []struct {
 		name       string
@@ -198,8 +194,8 @@ func Test_mql(t *testing.T) {
 			name: "dsl test",
 			args: args{
 				expression: smfConfig.Filter.Condition.String(),
-				env: Env{
-					Message: valueJsonMap,
+				env: Message{
+					Data: valueJsonMap,
 				},
 			},
 			wantResult: true,
